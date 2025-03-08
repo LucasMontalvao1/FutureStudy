@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configuração do Serilog
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information() // Defina apenas um nível mínimo
+    .MinimumLevel.Information() 
     .WriteTo.Console()
     .WriteTo.File("Logs/myapp-.log", rollingInterval: RollingInterval.Day)
     .Enrich.FromLogContext()

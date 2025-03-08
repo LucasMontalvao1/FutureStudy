@@ -1,0 +1,77 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header do login -->
+    <div class="login-header">
+      <img src="https://maximatech.com.br/wp-content/uploads/elementor/thumbs/logo-maximatech-e1554815418600-oa8r41ergk9cf56ap4p8pal7ouvqot7p1tovm0cili.png" alt="Logo" class="login-logo">
+      <h1 class="title">Bem-vindo</h1>
+      <p>Entre com suas credenciais para acessar</p>
+    </div>
+    
+    <!-- Formulário de login -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Nome de Usuário</label>
+        <input 
+          type="text" 
+          id="username" 
+          formControlName="username" 
+          class="form-control" 
+          [ngClass]="{ 'is-invalid': submitted && f['username'].errors }"
+          placeholder="Digite seu usuário"
+        />
+        <!-- Ícone do usuário -->
+        <i class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </i>
+        
+        <div *ngIf="submitted && f['username'].errors" class="invalid-feedback">
+          <div *ngIf="f['username'].errors?.['required']">Nome de usuário é obrigatório</div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          class="form-control" 
+          [ngClass]="{ 'is-invalid': submitted && f['password'].errors }"
+          placeholder="Digite sua senha"
+        />
+        <!-- Ícone de cadeado/senha -->
+        <i class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </i>
+        
+        <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+          <div *ngIf="f['password'].errors?.['required']">Senha é obrigatória</div>
+        </div>
+      </div>
+      
+      <button 
+        type="submit" 
+        class="login-button" 
+        [disabled]="loading"
+      >
+        <span *ngIf="loading" class="spinner-border"></span>
+        Entrar no Sistema
+      </button>
+      
+      <div *ngIf="error" class="alert-danger mt-3">
+        {{ error }}
+      </div>
+    </form>
+    
+    <!-- Footer opcional com informações adicionais -->
+    <div class="login-footer">
+      <p>© 2025 Lucas Montalvao. Todos os direitos reservados.</p>
+    </div>
+  </div>
+</div>

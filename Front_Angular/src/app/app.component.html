@@ -1,0 +1,8 @@
+<app-navbar *ngIf="authService.isAuthenticated() && !isLoginPage"></app-navbar>
+
+<!-- Conteúdo principal -->
+<main class="app-main" [ngClass]="{'login-page': isLoginPage}">
+  <router-outlet></router-outlet>
+</main>
+
+<app-footer [companyName]="'FutureApp'" [ngClass]="{'compact': isLoginPage || !authService.isAuthenticated()}"></app-footer>
