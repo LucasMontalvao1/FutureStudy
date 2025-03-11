@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent implements OnInit {
-  @Input() companyName: string = 'FutureApp';
+  @Input() companyName: string = 'FutureStudy';
   currentYear: number = new Date().getFullYear();
 
   constructor() { }

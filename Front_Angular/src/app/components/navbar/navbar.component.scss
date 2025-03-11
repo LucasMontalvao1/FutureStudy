@@ -72,13 +72,22 @@
   }
 }
 
+
 .menu-toggle {
-  display: none;
+  display: none; // Oculto por padrão
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  z-index: 1100;
+  padding: 8px; // Aumentar a área clicável
+  z-index: 1200; // Aumentar z-index para garantir que fique acima de outros elementos
+  position: relative; // Garantir que o z-index funcione
+  
+  // Ajuste para visualização em dispositivos móveis
+  @media (max-width: 1520px) {
+    display: flex !important; // Forçar exibição em dispositivos móveis
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .menu-icon {
@@ -356,7 +365,7 @@
 }
 
 // Responsividade para dispositivos móveis
-@media (max-width: 991px) {
+@media (max-width: 1520px) {
   .menu-toggle {
     display: block;
   }
@@ -474,4 +483,39 @@
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 990;
   }
+}
+
+// Estilos para dispositivos médios
+@media (min-width: 992px) and (max-width: 1200px) {
+  .navbar-menu {
+    margin-left: 1rem;
+  }
+  
+  .nav-items .nav-item a {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+  }
+}
+
+// Ajustes adicionais para telas pequenas
+@media (max-width: 767px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+  
+  .navbar-brand .navbar-title {
+    font-size: 1.05rem;
+  }
+  
+  .navbar-logo {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+// Ajuste para o dropdown-divider
+.dropdown-divider {
+  height: 1px;
+  margin: 0.5rem 0;
+  background-color: rgba(229, 231, 235, 0.5);
 }
