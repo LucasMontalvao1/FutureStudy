@@ -97,76 +97,6 @@
   }
 }
 
-<<<<<<< Updated upstream
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  z-index: 1100;
-}
-
-.menu-icon {
-  width: 22px;
-  height: 16px;
-  position: relative;
-  
-  span {
-    display: block;
-    position: absolute;
-    height: 2px;
-    width: 100%;
-    background: var(--primary-color, #6366F1);
-    border-radius: 2px;
-    transition: all 0.3s ease;
-    
-    &:nth-child(1) {
-      top: 0;
-    }
-    
-    &:nth-child(2) {
-      top: 7px;
-      width: 80%;
-    }
-    
-    &:nth-child(3) {
-      bottom: 0;
-    }
-  }
-  
-  &.active {
-    span {
-      &:nth-child(1) {
-        transform: translateY(7px) rotate(45deg);
-      }
-      
-      &:nth-child(2) {
-        opacity: 0;
-      }
-      
-      &:nth-child(3) {
-        transform: translateY(-7px) rotate(-45deg);
-      }
-    }
-  }
-}
-
-.navbar-menu {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 1;
-  margin-left: 2rem;
-  transition: transform 0.3s ease;
-}
-
-.nav-items {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-=======
 /* Menu Horizontal em telas grandes */
 .navbar-menu.desktop-menu {
   display: none;  // Escondido por padrão, será mostrado em telas grandes
@@ -177,7 +107,6 @@
     gap: 1rem;
     margin-left: 2rem;
   }
->>>>>>> Stashed changes
   
   .nav-item {
     display: flex;
@@ -464,33 +393,6 @@
         transform: translateY(-1px);
       }
     }
-<<<<<<< Updated upstream
-  }
-}
-
-// Responsividade para dispositivos móveis
-@media (max-width: 991px) {
-  .menu-toggle {
-    display: block;
-  }
-  
-  .navbar-menu {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 270px;
-    height: 100vh;
-    background-color: white;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 4.8rem 1.4rem 2rem;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    margin-left: 0;
-    overflow-y: auto;
-=======
->>>>>>> Stashed changes
     
     &.active {
       color: #4361ee;
@@ -566,19 +468,4 @@
       }
     }
   }
-<<<<<<< Updated upstream
-  
-  // Overlay para fechar menu ao clicar fora
-  .app-navbar.mobile-open::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 990;
-  }
-=======
->>>>>>> Stashed changes
 }
