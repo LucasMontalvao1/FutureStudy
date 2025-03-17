@@ -35,7 +35,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header usando o esquema Bearer.
-                      Digite 'Bearer' [espaço] e depois seu token no campo abaixo.
+                      Digite seu token no campo abaixo.
                       Exemplo: '12345abcdef'",
         Name = "Authorization",
         In = ParameterLocation.Header,
@@ -60,12 +60,23 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Registrar serviços e repositórios
-builder.Services.AddSingleton<MySqlConnectionDB>();
+// Registrar serviços de infraestrutura
+builder.Services.AddScoped<IDatabaseService, MySqlDatabaseService>();
+
+// Registrar repositórios
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IMateriaRepository, MateriaRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<ISessaoEstudoRepository, SessaoEstudoRepository>();
+builder.Services.AddScoped<ITopicoRepository, TopicoRepository>();
+
+// Registrar serviços
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IMateriaService, MateriaService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<ISessaoEstudoService, SessaoEstudoService>();
+builder.Services.AddScoped<ITopicoService, TopicoService>();
 
 // Configurar CORS
 builder.Services.AddCors(options =>
@@ -78,7 +89,9 @@ builder.Services.AddCors(options =>
 });
 
 // Configurar autenticação JWT
-var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
+    throw new InvalidOperationException("JWT Key não está configurada no appsettings.json"));
+
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

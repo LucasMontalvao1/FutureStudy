@@ -37,8 +37,7 @@ namespace ERP_API.Repositorys
                         new Claim(ClaimTypes.NameIdentifier, user.UsuarioID.ToString()),
                         new Claim(ClaimTypes.Name, user.Name),
                         new Claim(ClaimTypes.GivenName, user.Username),
-                        new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                        new Claim("Foto", user.Foto ?? string.Empty)
+                        new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
                     }),
                     Expires = DateTime.UtcNow.AddHours(6),
                     SigningCredentials = new SigningCredentials(

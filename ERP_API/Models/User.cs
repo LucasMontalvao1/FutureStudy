@@ -20,9 +20,6 @@ namespace ERP_API.Models
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(200)]
-        public string Foto { get; set; } = string.Empty;
-
         [StringLength(100)]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
