@@ -1,4 +1,6 @@
 ﻿using ERP_API.Models;
+using ERP_API.Models.Entities;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -82,9 +84,9 @@ namespace ERP_API.Repositorys.Interfaces
     public class DashboardStats
     {
         public TimeSpan TempoTotalEstudado { get; set; }
-        public int MetasAlcancadas { get; set; }
+        public int DiasEstudados { get; set; }
         public int TotalDias { get; set; }
         public string MateriaMaisEstudada { get; set; } = string.Empty;
-        public int HorasMateriaMaisEstudada { get; set; }
+        public double HorasMateriaMaisEstudada { get; set; }
     }
 }

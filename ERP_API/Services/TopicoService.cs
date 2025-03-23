@@ -53,7 +53,7 @@ namespace ERP_API.Services
             return topico;
         }
 
-        public async Task<Topico> CreateAsync(TopicoRequestDto dto, int usuarioId)
+        public async Task<Topico> CreateAsync(TopicoDTO dto, int usuarioId)
         {
             // Verifica se a matéria existe e pertence ao usuário
             var materiaExists = await _materiaRepository.BelongsToUsuarioAsync(dto.MateriaId, usuarioId);

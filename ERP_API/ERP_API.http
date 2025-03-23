@@ -1,6 +1,154 @@
-@ERP_API_HostAddress = http://localhost:5103
+@baseUrl = http://localhost:5103
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJMdWNhcyBNb250YWx2YW8iLCJnaXZlbl9uYW1lIjoiYSIsImVtYWlsIjoibHVjYXNAdGVzdGUuY21vbSIsIm5iZiI6MTc0MjczOTc4NSwiZXhwIjoxNzQyNzYxMzg1LCJpYXQiOjE3NDI3Mzk3ODV9.HBN21K6Spygknv1RM0w5j5ZQhL-PUrCDHodAz7c-Xro
 
-GET {{ERP_API_HostAddress}}/weatherforecast/
-Accept: application/json
+### Autenticação
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
 
-###
+{
+  "email": "a",
+  "senha": "1"
+}
+
+### Salvar o token da resposta (se estiver usando REST Client no VS Code)
+@authToken = {{login.response.body.token}}
+
+### Matérias
+# Listar todas as matérias
+GET {{baseUrl}}/api/materias
+Authorization: Bearer {{token}}
+
+# Obter matéria por ID
+GET {{baseUrl}}/api/materias/1
+Authorization: Bearer {{token}}
+
+# Criar nova matéria
+POST {{baseUrl}}/api/materias
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nome": "Matemática",
+  "descricao": "Matemática avançada"
+}
+
+# Atualizar matéria
+PUT {{baseUrl}}/api/materias/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nome": "Matemática Atualizada",
+  "descricao": "Descrição atualizada"
+}
+
+# Excluir matéria
+DELETE {{baseUrl}}/api/materias/1
+Authorization: Bearer {{token}}
+
+### Categorias
+# Listar todas as categorias
+GET {{baseUrl}}/api/categorias
+Authorization: Bearer {{token}}
+
+# Obter categoria por ID
+GET {{baseUrl}}/api/categorias/1
+Authorization: Bearer {{token}}
+
+### Tópicos
+# Listar todos os tópicos
+GET {{baseUrl}}/api/topicos
+Authorization: Bearer {{token}}
+
+# Obter tópico por ID
+GET {{baseUrl}}/api/topicos/1
+Authorization: Bearer {{token}}
+
+### Sessões de Estudo
+# Listar todas as sessões
+GET {{baseUrl}}/api/sessoes
+Authorization: Bearer {{token}}
+
+# Obter sessão por ID
+GET {{baseUrl}}/api/sessoes/1
+Authorization: Bearer {{token}}
+
+# Criar nova sessão de estudo
+POST {{baseUrl}}/api/sessoes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "materiaId": 1,
+  "topicoId": 1,
+  "dataInicio": "2025-03-23T14:00:00",
+  "dataFim": "2025-03-23T16:00:00",
+  "descricao": "Estudo de álgebra linear"
+}
+
+# Registrar pausa na sessão
+POST {{baseUrl}}/api/sessoes/1/pausas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "inicio": "2025-03-23T14:30:00",
+  "fim": "2025-03-23T14:45:00",
+  "motivo": "Intervalo para café"
+}
+
+### Metas
+# Listar todas as metas
+GET {{baseUrl}}/api/metas
+Authorization: Bearer {{token}}
+
+# Obter meta por ID
+GET {{baseUrl}}/api/metas/1
+Authorization: Bearer {{token}}
+
+# Criar nova meta
+POST {{baseUrl}}/api/metas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Completar curso de cálculo",
+  "descricao": "Finalizar todos os módulos do curso",
+  "dataInicio": "2025-03-01T00:00:00",
+  "dataFim": "2025-04-30T23:59:59",
+  "status": "EmAndamento",
+  "prioridade": "Alta",
+  "materiaId": 1
+}
+
+### Anotações
+# Listar todas as anotações
+GET {{baseUrl}}/api/anotacoes
+Authorization: Bearer {{token}}
+
+# Obter anotação por ID
+GET {{baseUrl}}/api/anotacoes/1
+Authorization: Bearer {{token}}
+
+# Criar nova anotação
+POST {{baseUrl}}/api/anotacoes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Fórmulas importantes",
+  "conteudo": "Lista de fórmulas para revisar",
+  "materiaId": 1,
+  "topicoId": 1
+}
+
+# Atualizar anotação
+PUT {{baseUrl}}/api/anotacoes/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Fórmulas atualizadas",
+  "conteudo": "Lista atualizada de fórmulas"
+}

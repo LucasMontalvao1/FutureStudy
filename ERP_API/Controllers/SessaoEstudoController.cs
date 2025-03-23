@@ -1,7 +1,9 @@
-﻿using ERP_API.Models.DTOs;
+﻿using AutoMapper;
+using ERP_API.Models.DTOs;
 using ERP_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,17 +11,35 @@ using System.Threading.Tasks;
 namespace ERP_API.Controllers
 {
     [ApiController]
-    [Route("api/v1/sessoes")]
+    [Route("api/[controller]")]
     [Authorize]
-    public class SessaoEstudoController : BaseController
+    public class SessoesEstudoController : ControllerBase
     {
         private readonly ISessaoEstudoService _sessaoService;
-        private readonly ILogger<SessaoEstudoController> _logger;
+        private readonly ILogger<SessoesEstudoController> _logger;
+        private readonly IMapper _mapper;
 
-        public SessaoEstudoController(ISessaoEstudoService sessaoService, ILogger<SessaoEstudoController> logger)
+        public SessoesEstudoController(
+            ISessaoEstudoService sessaoService,
+            ILogger<SessoesEstudoController> logger,
+            IMapper mapper)
         {
             _sessaoService = sessaoService;
             _logger = logger;
+            _mapper = mapper;
+        }
+
+        // Método auxiliar para obter o ID do usuário logado
+        private int GetUsuarioId()
+        {
+            // Obtém o ID do usuário a partir do token JWT
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                throw new UnauthorizedAccessException("Usuário não autenticado ou token inválido");
+            }
+
+            return int.Parse(userIdClaim.Value);
         }
 
         [HttpGet]
@@ -27,37 +47,24 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
-                {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                var usuarioId = GetUsuarioId();
 
                 DateTime dataInicio = inicio ?? DateTime.Today;
                 DateTime dataFim = fim ?? DateTime.Today.AddDays(1).AddSeconds(-1);
 
-                var sessoes = await _sessaoService.GetAllByPeriodoAsync(usuarioId.Value, dataInicio, dataFim);
-
-                var response = sessoes.Select(s => new SessaoEstudoResponseDto
-                {
-                    Id = s.Id,
-                    UsuarioId = s.UsuarioId,
-                    MateriaId = s.MateriaId,
-                    TopicoId = s.TopicoId,
-                    DataInicio = s.DataInicio,
-                    DataFim = s.DataFim,
-                    Status = s.Status,
-                    TempoEstudado = s.TempoEstudado,
-                    CriadoEm = s.CriadoEm,
-                    AtualizadoEm = s.AtualizadoEm
-                });
+                var sessoes = await _sessaoService.GetAllByPeriodoAsync(usuarioId, dataInicio, dataFim);
+                var response = sessoes.Select(s => _mapper.Map<SessaoEstudoResponseDto>(s));
 
                 return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao obter sessões de estudo");
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -66,39 +73,25 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
-                {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                var usuarioId = GetUsuarioId();
 
-                var sessao = await _sessaoService.GetByIdAsync(id, usuarioId.Value);
-
+                var sessao = await _sessaoService.GetByIdAsync(id, usuarioId);
                 if (sessao == null)
                 {
                     return NotFound(new { message = "Sessão não encontrada" });
                 }
 
-                var response = new SessaoEstudoResponseDto
-                {
-                    Id = sessao.Id,
-                    UsuarioId = sessao.UsuarioId,
-                    MateriaId = sessao.MateriaId,
-                    TopicoId = sessao.TopicoId,
-                    DataInicio = sessao.DataInicio,
-                    DataFim = sessao.DataFim,
-                    Status = sessao.Status,
-                    TempoEstudado = sessao.TempoEstudado,
-                    CriadoEm = sessao.CriadoEm,
-                    AtualizadoEm = sessao.AtualizadoEm
-                };
-
+                var response = _mapper.Map<SessaoEstudoResponseDto>(sessao);
                 return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao obter sessão {Id}", id);
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -107,20 +100,29 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
+                var usuarioId = GetUsuarioId();
+
+                var dados = await _sessaoService.GetCalendarioAsync(usuarioId, mes, ano);
+                var response = dados.Select(kvp => new SessaoCalendarioDto
                 {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                    Dia = kvp.Key,
+                    MinutosEstudados = kvp.Value
+                });
 
-                var dados = await _sessaoService.GetCalendarioAsync(usuarioId.Value, mes, ano);
-
-                return Ok(dados);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao obter dados do calendário");
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -129,15 +131,23 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
+                var usuarioId = GetUsuarioId();
+
+                var stats = await _sessaoService.GetDashboardStatsAsync(usuarioId, periodo, data);
+                var response = new SessaoDashboardStatsDto
                 {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                    TempoTotalEstudado = stats.TempoTotalEstudado,
+                    DiasEstudados = stats.DiasEstudados,
+                    TotalDias = stats.TotalDias,
+                    MateriaMaisEstudada = stats.MateriaMaisEstudada,
+                    HorasMateriaMaisEstudada = stats.HorasMateriaMaisEstudada
+                };
 
-                var stats = await _sessaoService.GetDashboardStatsAsync(usuarioId.Value, periodo, data);
-
-                return Ok(stats);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
             }
             catch (ArgumentException ex)
             {
@@ -146,7 +156,7 @@ namespace ERP_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao obter estatísticas do dashboard");
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -160,39 +170,29 @@ namespace ERP_API.Controllers
 
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
-                {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                var usuarioId = GetUsuarioId();
 
-                var sessao = await _sessaoService.IniciarSessaoAsync(dto, usuarioId.Value);
-
-                var response = new SessaoEstudoResponseDto
-                {
-                    Id = sessao.Id,
-                    UsuarioId = sessao.UsuarioId,
-                    MateriaId = sessao.MateriaId,
-                    TopicoId = sessao.TopicoId,
-                    DataInicio = sessao.DataInicio,
-                    DataFim = sessao.DataFim,
-                    Status = sessao.Status,
-                    TempoEstudado = sessao.TempoEstudado,
-                    CriadoEm = sessao.CriadoEm,
-                    AtualizadoEm = sessao.AtualizadoEm
-                };
+                var sessao = await _sessaoService.IniciarSessaoAsync(dto, usuarioId);
+                var response = _mapper.Map<SessaoEstudoResponseDto>(sessao);
 
                 return CreatedAtAction(nameof(GetById), new { id = sessao.Id }, response);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
+            catch (FluentValidation.ValidationException ex)
+            {
+                return BadRequest(ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }));
+            }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Erro de validação ao iniciar sessão: {Message}", ex.Message);
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao iniciar sessão");
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -201,34 +201,29 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
-                {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                var usuarioId = GetUsuarioId();
 
-                var pausa = await _sessaoService.PausarSessaoAsync(id, usuarioId.Value);
-
-                var response = new PausaResponseDto
-                {
-                    Id = pausa.Id,
-                    UsuarioId = pausa.UsuarioId,
-                    SessaoId = pausa.SessaoId,
-                    Inicio = pausa.Inicio,
-                    Fim = pausa.Fim
-                };
+                var pausa = await _sessaoService.PausarSessaoAsync(id, usuarioId);
+                var response = _mapper.Map<PausaResponseDto>(pausa);
 
                 return Ok(response);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
+            catch (FluentValidation.ValidationException ex)
+            {
+                return BadRequest(ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }));
+            }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Erro de validação ao pausar sessão {Id}: {Message}", id, ex.Message);
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao pausar sessão {Id}", id);
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -237,14 +232,9 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
-                {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                var usuarioId = GetUsuarioId();
 
-                var retomada = await _sessaoService.RetomarSessaoAsync(id, usuarioId.Value);
-
+                var retomada = await _sessaoService.RetomarSessaoAsync(id, usuarioId);
                 if (!retomada)
                 {
                     return NotFound(new { message = "Pausa não encontrada ou já finalizada" });
@@ -252,15 +242,18 @@ namespace ERP_API.Controllers
 
                 return Ok(new { message = "Sessão retomada com sucesso" });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Erro de validação ao retomar sessão: {Message}", ex.Message);
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao retomar sessão para a pausa {Id}", id);
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
 
@@ -269,14 +262,9 @@ namespace ERP_API.Controllers
         {
             try
             {
-                var usuarioId = GetUsuarioIdFromToken();
-                if (usuarioId == null)
-                {
-                    return Unauthorized(new { message = "Usuário não identificado" });
-                }
+                var usuarioId = GetUsuarioId();
 
-                var finalizada = await _sessaoService.FinalizarSessaoAsync(id, usuarioId.Value);
-
+                var finalizada = await _sessaoService.FinalizarSessaoAsync(id, usuarioId);
                 if (!finalizada)
                 {
                     return NotFound(new { message = "Sessão não encontrada ou já finalizada" });
@@ -284,15 +272,18 @@ namespace ERP_API.Controllers
 
                 return Ok(new { message = "Sessão finalizada com sucesso" });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Erro de validação ao finalizar sessão {Id}: {Message}", id, ex.Message);
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao finalizar sessão {Id}", id);
-                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+                return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }
     }

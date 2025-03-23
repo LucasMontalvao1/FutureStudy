@@ -1,16 +1,45 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="14.0.0" />
+		<PackageReference Include="FluentValidation" Version="11.11.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 		<PackageReference Include="MySqlConnector" Version="2.4.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.6.1" />
+		<EmbeddedResource Include="SQL\**\*.sql" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Remove="SQL\SessoesEstudo\GetTempoEstudadoPorDia.sql" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="SQL\Anotacoes\Create.sql" />
+	  <None Remove="SQL\Anotacoes\Delete.sql" />
+	  <None Remove="SQL\Anotacoes\GetAllBySessao.sql" />
+	  <None Remove="SQL\Anotacoes\GetAllByUsuario.sql" />
+	  <None Remove="SQL\Anotacoes\GetById.sql" />
+	  <None Remove="SQL\Anotacoes\Update.sql" />
+	  <None Remove="SQL\HistoricoAnotacoes\Create.sql" />
+	  <None Remove="SQL\HistoricoAnotacoes\GetByAnotacao.sql" />
+	  <None Remove="SQL\HistoricoAnotacoes\GetById.sql" />
+	  <None Remove="SQL\SessoesEstudo\CalcularTempoEstudado.sql" />
+	  <None Remove="SQL\SessoesEstudo\CreatePausa.sql" />
+	  <None Remove="SQL\SessoesEstudo\CreateSessao.sql" />
+	  <None Remove="SQL\SessoesEstudo\FinalizarPausa.sql" />
+	  <None Remove="SQL\SessoesEstudo\FinalizarPausasAtivas.sql" />
+	  <None Remove="SQL\SessoesEstudo\FinalizarSessao.sql" />
+	  <None Remove="SQL\SessoesEstudo\GetAllByPeriodo.sql" />
+	  <None Remove="SQL\SessoesEstudo\GetById.sql" />
+	  <None Remove="SQL\SessoesEstudo\GetDashboardStats.sql" />
+	  <None Remove="SQL\SessoesEstudo\GetMateriaMaisEstudada.sql" />
+	  <None Remove="SQL\SessoesEstudo\GetPausaById.sql" />
+	  <None Remove="SQL\SessoesEstudo\UpdateStatus.sql" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Logs\" />

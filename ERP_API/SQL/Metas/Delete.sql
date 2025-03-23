@@ -1,0 +1,1 @@
+﻿DELETE FROM metas WHERE id = @id

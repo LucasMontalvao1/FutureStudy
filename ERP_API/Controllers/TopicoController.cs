@@ -124,7 +124,7 @@ namespace ERP_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TopicoRequestDto dto)
+        public async Task<IActionResult> Create([FromBody] TopicoDTO dto)
         {
             if (!ModelState.IsValid)
             {

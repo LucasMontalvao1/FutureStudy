@@ -1,5 +1,6 @@
 ﻿using ERP_API.Models;
 using ERP_API.Models.DTOs;
+using ERP_API.Models.Entities;
 using ERP_API.Repositorys.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -52,7 +53,7 @@ namespace ERP_API.Services.Interfaces
         /// <returns>Sessão criada</returns>
         Task<SessaoEstudo> IniciarSessaoAsync(SessaoEstudoRequestDto dto, int usuarioId);
 
-        ////// <summary>
+        /// <summary>
         /// Finaliza uma sessão de estudo
         /// </summary>
         /// <param name="id">ID da sessão</param>

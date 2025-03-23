@@ -36,7 +36,7 @@ namespace ERP_API.Services.Interfaces
         /// <param name="dto">Dados do tópico</param>
         /// <param name="usuarioId">ID do usuário</param>
         /// <returns>Tópico criado</returns>
-        Task<Topico> CreateAsync(TopicoRequestDto dto, int usuarioId);
+        Task<Topico> CreateAsync(TopicoDTO dto, int usuarioId);
 
         /// <summary>
         /// Atualiza um tópico existente

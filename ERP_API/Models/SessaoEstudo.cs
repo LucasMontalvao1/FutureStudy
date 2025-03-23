@@ -1,6 +1,7 @@
 ﻿using System;
+using ERP_API.Models.Enums;
 
-namespace ERP_API.Models
+namespace ERP_API.Models.Entities
 {
     public class SessaoEstudo
     {
@@ -10,7 +11,7 @@ namespace ERP_API.Models
         public int? TopicoId { get; set; }
         public DateTime DataInicio { get; set; }
         public DateTime? DataFim { get; set; }
-        public string Status { get; set; } = "em_andamento";
+        public StatusSessao Status { get; set; } = StatusSessao.EmAndamento;
         public TimeSpan TempoEstudado { get; set; }
         public DateTime CriadoEm { get; set; }
         public DateTime AtualizadoEm { get; set; }
