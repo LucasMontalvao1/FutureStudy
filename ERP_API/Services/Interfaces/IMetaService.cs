@@ -1,4 +1,5 @@
 ﻿using ERP_API.Models.DTOs;
+using ERP_API.Models.Enums;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,6 +21,8 @@ namespace ERP_API.Services.Interfaces
         /// <param name="usuarioId">ID do usuário</param>
         /// <returns>Lista de DTOs de metas</returns>
         Task<IEnumerable<MetaResponseDto>> GetAllByMateriaIdAsync(int materiaId, int usuarioId);
+
+        Task<IEnumerable<MetaResponseDto>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim);
 
         /// <summary>
         /// Obtém todas as metas de um tópico

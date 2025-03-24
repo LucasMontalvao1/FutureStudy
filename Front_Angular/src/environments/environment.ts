@@ -4,6 +4,12 @@ export const environment = {
   production: false,
   apiUrl: apiUrl,
   endpoints: {
-    login: `${apiUrl}/login`
+    login: `${apiUrl}/login`,
+    sessaoestudo: `${apiUrl}/SessoesEstudo`,
+    metas: `${apiUrl}/metas`,
+    anotacoes: `${apiUrl}/anotacoes`,
   },
 };
+
+
+

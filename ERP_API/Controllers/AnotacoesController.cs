@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace ERP_API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [Authorize]
     public class AnotacoesController : ControllerBase
     {
@@ -60,6 +60,29 @@ namespace ERP_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao obter anotações");
+                return StatusCode(500, new { message = "Erro interno do servidor" });
+            }
+        }
+
+        [HttpGet("por-data")]
+        public async Task<IActionResult> GetByDate([FromQuery] DateTime dataInicio, [FromQuery] DateTime? dataFim = null)
+        {
+            try
+            {
+                var usuarioId = GetUsuarioId();
+                var anotacoes = await _anotacaoService.GetByDateRangeAsync(usuarioId, dataInicio, dataFim);
+                var response = anotacoes.Select(a => _mapper.Map<AnotacaoResponseDto>(a));
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter anotações por data. Início: {DataInicio}, Fim: {DataFim}",
+                    dataInicio, dataFim);
                 return StatusCode(500, new { message = "Erro interno do servidor" });
             }
         }

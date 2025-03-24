@@ -73,7 +73,9 @@ namespace ERP_API.Models.DTOs
         public int Id { get; set; }
         public int UsuarioId { get; set; }
         public int? MateriaId { get; set; }
+        public string? MateriaNome { get; set; }
         public int? TopicoId { get; set; }
+        public string? TopicoNome { get; set; }
         public string Titulo { get; set; } = string.Empty;
         public string? Descricao { get; set; }
         public TipoMeta Tipo { get; set; }

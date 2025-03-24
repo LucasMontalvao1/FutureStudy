@@ -47,6 +47,19 @@ namespace ERP_API.Services
             return await _anotacaoRepository.GetAllByUsuarioAsync(usuarioId);
         }
 
+        public async Task<IEnumerable<Anotacao>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim)
+        {
+            // Se a data final não for fornecida, use a data atual
+            dataFim ??= DateTime.Now;
+
+            // Obter as anotações do repositório
+            var anotacoes = await _anotacaoRepository.GetByDateRangeAsync(usuarioId, dataInicio, dataFim.Value);
+
+            _logger.LogInformation("Retornando {Count} anotações entre {DataInicio} e {DataFim} para o usuário {UsuarioId}",
+                anotacoes.Count(), dataInicio, dataFim, usuarioId);
+
+            return anotacoes;
+        }
         public async Task<IEnumerable<Anotacao>> GetAllBySessaoAsync(int sessaoId, int usuarioId)
         {
             // Verificar se a sessão existe e pertence ao usuário

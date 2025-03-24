@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace ERP_API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [Authorize]
     public class SessoesEstudoController : ControllerBase
     {

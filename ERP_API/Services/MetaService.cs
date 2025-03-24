@@ -48,6 +48,55 @@ namespace ERP_API.Services
             return _mapper.Map<IEnumerable<MetaResponseDto>>(metas);
         }
 
+        public async Task<IEnumerable<MetaResponseDto>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim)
+        {
+            // Se a data final não for fornecida, use a data atual
+            dataFim ??= DateTime.Now;
+
+            // Obter as metas do repositório
+            var metas = await _metaRepository.GetByDateRangeAsync(usuarioId, dataInicio, dataFim.Value);
+
+            // Converter para DTOs
+            var metaDtos = new List<MetaResponseDto>();
+            foreach (var meta in metas)
+            {
+                // Adicionar informações adicionais se necessário (como nome da matéria, tópico, etc.)
+                var metaDto = _mapper.Map<MetaResponseDto>(meta);
+
+                // Se você precisar carregar informações relacionadas:
+                if (meta.MateriaId.HasValue)
+                {
+                    var materia = await _materiaRepository.GetByIdAsync(meta.MateriaId.Value);
+                    if (materia != null)
+                    {
+                        metaDto.MateriaNome = materia.Nome;
+                    }
+                }
+
+                if (meta.TopicoId.HasValue)
+                {
+                    var topico = await _topicoRepository.GetByIdAsync(meta.TopicoId.Value);
+                    if (topico != null)
+                    {
+                        metaDto.TopicoNome = topico.Nome;
+                    }
+                }
+
+                // Calcular progresso percentual
+                if (meta.QuantidadeTotal > 0)
+                {
+                    metaDto.PercentualConcluido = ((decimal)meta.QuantidadeAtual * 100) / meta.QuantidadeTotal;
+                }
+
+                metaDtos.Add(metaDto);
+            }
+
+            _logger.LogInformation("Retornando {Count} metas entre {DataInicio} e {DataFim} para o usuário {UsuarioId}",
+                metaDtos.Count, dataInicio, dataFim, usuarioId);
+
+            return metaDtos;
+        }
+
         public async Task<IEnumerable<MetaResponseDto>> GetAllByMateriaIdAsync(int materiaId, int usuarioId)
         {
             // Verifica se a matéria pertence ao usuário

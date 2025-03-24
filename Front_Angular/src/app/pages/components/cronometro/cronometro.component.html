@@ -1,0 +1,27 @@
+<div class="card">
+    <h3>Cronômetro de Estudos</h3>
+    
+    <div class="timer">{{tempo}}</div>
+    
+    <div class="detalhes-timer">
+      <div class="item-detalhe">
+        <span class="rotulo">Categoria:</span>
+        <span class="valor">{{categoria}}</span>
+      </div>
+      
+      <div class="item-detalhe">
+        <span class="rotulo">Matéria:</span>
+        <span class="valor">{{materia}}</span>
+      </div>
+    </div>
+    
+    <div class="controles-timer">
+      <button class="btn btn-primary" (click)="iniciar()">Iniciar</button>
+      <button class="btn btn-secondary" (click)="pausar()">Pausar</button>
+      <button class="btn btn-secondary" (click)="parar()">Parar</button>
+    </div>
+    
+    <div class="campo-notas">
+      <input type="text" class="form-control" placeholder="Adicionar notas..." [(ngModel)]="notas">
+    </div>
+  </div>

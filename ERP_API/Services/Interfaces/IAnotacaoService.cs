@@ -15,6 +15,15 @@ namespace ERP_API.Services.Interfaces
         Task<IEnumerable<Anotacao>> GetAllByUsuarioAsync(int usuarioId);
 
         /// <summary>
+        /// Obtém anotações por intervalo de datas
+        /// </summary>
+        /// <param name="usuarioId">ID do usuário</param>
+        /// <param name="dataInicio">Data inicial</param>
+        /// <param name="dataFim">Data final (opcional)</param>
+        /// <returns>Lista de anotações no período</returns>
+        Task<IEnumerable<Anotacao>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim);
+
+        /// <summary>
         /// Obtém todas as anotações relacionadas a uma sessão
         /// </summary>
         /// <param name="sessaoId">ID da sessão</param>

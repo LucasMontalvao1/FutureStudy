@@ -58,6 +58,47 @@ namespace ERP_API.Repositorys
             }
         }
 
+        public async Task<IEnumerable<Meta>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim)
+        {
+            try
+            {
+                string query = await _sqlLoader.LoadSqlAsync("Metas/GetByDateRange.sql");
+
+                var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@usuarioId", usuarioId),
+            new MySqlParameter("@dataInicio", dataInicio)
+        };
+
+                if (dataFim.HasValue)
+                {
+                    parameters.Add(new MySqlParameter("@dataFim", dataFim.Value));
+                }
+                else
+                {
+                    parameters.Add(new MySqlParameter("@dataFim", DateTime.Now));
+                }
+
+                var dataTable = await _databaseService.ExecuteQueryAsync(query, parameters.ToArray());
+                var metas = new List<Meta>();
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    metas.Add(MapRowToMeta(row));
+                }
+
+                _logger.LogInformation("Obtidas {Count} metas para o período de {DataInicio} a {DataFim}",
+                    metas.Count, dataInicio, dataFim);
+                return metas;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter metas por data. Início: {DataInicio}, Fim: {DataFim}",
+                    dataInicio, dataFim);
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<Meta>> GetAllByMateriaIdAsync(int materiaId, int usuarioId)
         {
             try

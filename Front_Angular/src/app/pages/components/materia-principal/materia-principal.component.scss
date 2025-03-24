@@ -1,0 +1,30 @@
+.card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--box-shadow-sm);
+    padding: 1.5rem;
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-md);
+  }
+  
+  h3 {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .materia {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--info-color);
+    margin-bottom: 0.25rem;
+  }
+  
+  .horas {
+    font-size: 0.875rem;
+    color: var(--text-hint);
+  }

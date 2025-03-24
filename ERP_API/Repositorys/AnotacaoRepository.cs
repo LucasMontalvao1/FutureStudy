@@ -58,6 +58,47 @@ namespace ERP_API.Repositorys
             }
         }
 
+        public async Task<IEnumerable<Anotacao>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim)
+        {
+            try
+            {
+                string query = await _sqlLoader.LoadSqlAsync("Anotacoes/GetByDateRange.sql");
+
+                var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@usuarioId", usuarioId),
+            new MySqlParameter("@dataInicio", dataInicio)
+        };
+
+                if (dataFim.HasValue)
+                {
+                    parameters.Add(new MySqlParameter("@dataFim", dataFim.Value));
+                }
+                else
+                {
+                    parameters.Add(new MySqlParameter("@dataFim", DateTime.Now));
+                }
+
+                var dataTable = await _databaseService.ExecuteQueryAsync(query, parameters.ToArray());
+                var anotacoes = new List<Anotacao>();
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    anotacoes.Add(MapRowToAnotacao(row));
+                }
+
+                _logger.LogInformation("Obtidas {Count} anotações para o período de {DataInicio} a {DataFim}",
+                    anotacoes.Count, dataInicio, dataFim);
+
+                return anotacoes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter anotações por data. Início: {DataInicio}, Fim: {DataFim}",
+                    dataInicio, dataFim);
+                throw;
+            }
+        }
         public async Task<IEnumerable<Anotacao>> GetAllBySessaoAsync(int sessaoId, int usuarioId)
         {
             try

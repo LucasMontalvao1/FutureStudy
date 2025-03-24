@@ -256,14 +256,12 @@ namespace ERP_API.Repositorys
 
                 await _databaseService.ExecuteNonQueryAsync(pausaQuery, pausaParameters);
 
-                // Agora finaliza a sessão
                 string query = await _sqlLoader.LoadSqlAsync("SessoesEstudo/FinalizarSessao.sql");
                 var parameters = new MySqlParameter[]
                 {
                     new MySqlParameter("@id", id),
                     new MySqlParameter("@usuarioId", usuarioId),
-                    new MySqlParameter("@status", ConvertStatusToDbValue(StatusSessao.Concluida)),
-                    new MySqlParameter("@statusAtual", ConvertStatusToDbValue(StatusSessao.EmAndamento))
+                    new MySqlParameter("@status", ConvertStatusToDbValue(StatusSessao.Concluida))
                 };
 
                 var affectedRows = await _databaseService.ExecuteNonQueryAsync(query, parameters);

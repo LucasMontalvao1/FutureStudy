@@ -14,6 +14,15 @@ namespace ERP_API.Repositorys.Interfaces
         Task<IEnumerable<Anotacao>> GetAllByUsuarioAsync(int usuarioId);
 
         /// <summary>
+        /// Obtém anotações criadas dentro de um intervalo de datas
+        /// </summary>
+        /// <param name="usuarioId">ID do usuário</param>
+        /// <param name="dataInicio">Data inicial do período</param>
+        /// <param name="dataFim">Data final do período (opcional)</param>
+        /// <returns>Lista de anotações no período especificado</returns>
+        Task<IEnumerable<Anotacao>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim);
+
+        /// <summary>
         /// Obtém todas as anotações relacionadas a uma sessão
         /// </summary>
         /// <param name="sessaoId">ID da sessão</param>

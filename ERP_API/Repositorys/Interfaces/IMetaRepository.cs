@@ -22,6 +22,8 @@ namespace ERP_API.Repositories.Interfaces
         /// <returns>Lista de metas</returns>
         Task<IEnumerable<Meta>> GetAllByMateriaIdAsync(int materiaId, int usuarioId);
 
+        Task<IEnumerable<Meta>> GetByDateRangeAsync(int usuarioId, DateTime dataInicio, DateTime? dataFim);
+
         /// <summary>
         /// Obtém todas as metas de um tópico
         /// </summary>

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace ERP_API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [Authorize]
     public class MetasController : ControllerBase
     {
@@ -54,6 +54,26 @@ namespace ERP_API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao obter metas do usuário");
+                return StatusCode(500, "Erro interno do servidor");
+            }
+        }
+
+        [HttpGet("por-data")]
+        public async Task<IActionResult> GetMetasByData([FromQuery] DateTime dataInicio, [FromQuery] DateTime? dataFim = null)
+        {
+            try
+            {
+                var usuarioId = GetUsuarioId();
+                var metas = await _metaService.GetByDateRangeAsync(usuarioId, dataInicio, dataFim);
+                return Ok(metas);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter metas por data. Início: {DataInicio}, Fim: {DataFim}", dataInicio, dataFim);
                 return StatusCode(500, "Erro interno do servidor");
             }
         }

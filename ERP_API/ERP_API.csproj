@@ -16,18 +16,17 @@
 		<EmbeddedResource Include="SQL\**\*.sql" />
 	</ItemGroup>
 	<ItemGroup>
-	  <EmbeddedResource Remove="SQL\SessoesEstudo\GetTempoEstudadoPorDia.sql" />
-	</ItemGroup>
-	<ItemGroup>
 	  <None Remove="SQL\Anotacoes\Create.sql" />
 	  <None Remove="SQL\Anotacoes\Delete.sql" />
 	  <None Remove="SQL\Anotacoes\GetAllBySessao.sql" />
 	  <None Remove="SQL\Anotacoes\GetAllByUsuario.sql" />
+	  <None Remove="SQL\Anotacoes\GetByDateRange.sql" />
 	  <None Remove="SQL\Anotacoes\GetById.sql" />
 	  <None Remove="SQL\Anotacoes\Update.sql" />
 	  <None Remove="SQL\HistoricoAnotacoes\Create.sql" />
 	  <None Remove="SQL\HistoricoAnotacoes\GetByAnotacao.sql" />
 	  <None Remove="SQL\HistoricoAnotacoes\GetById.sql" />
+	  <None Remove="SQL\Metas\GetByDateRange.sql" />
 	  <None Remove="SQL\SessoesEstudo\CalcularTempoEstudado.sql" />
 	  <None Remove="SQL\SessoesEstudo\CreatePausa.sql" />
 	  <None Remove="SQL\SessoesEstudo\CreateSessao.sql" />

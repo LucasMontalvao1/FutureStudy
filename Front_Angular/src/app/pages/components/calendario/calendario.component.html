@@ -1,0 +1,170 @@
+<div class="calendario-container">
+  <!-- Cabeçalho do calendário com navegação -->
+  <div class="calendario-header">
+    <h3>Calendário de Estudos - {{ nomeMes }}</h3>
+    
+    <div class="calendario-navegacao" *ngIf="permitirNavegacao">
+      <button class="btn-navegacao" (click)="voltarMes()" aria-label="Mês anterior">
+        <i class="fa fa-chevron-left"></i>
+      </button>
+      
+      <button class="btn-hoje" (click)="irParaHoje()">
+        Hoje
+      </button>
+      
+      <button class="btn-navegacao" (click)="avancarMes()" aria-label="Próximo mês">
+        <i class="fa fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Mensagem de carregamento -->
+  <div class="calendario-loader" *ngIf="carregando">
+    <div class="loader"></div>
+    <p>Carregando...</p>
+  </div>
+  
+  <!-- Mensagem de erro -->
+  <div class="calendario-erro" *ngIf="erro">
+    <p>{{ erro }}</p>
+    <button (click)="atualizarCalendario()">Tentar novamente</button>
+  </div>
+  
+  <!-- Grade do calendário -->
+  <div class="calendario-grid" *ngIf="!carregando && !erro">
+    <!-- Cabeçalho dos dias da semana -->
+    <div class="calendario-cabecalho">
+      <div class="dia-semana" *ngFor="let dia of diasSemana">{{ dia }}</div>
+    </div>
+    
+    <!-- Dias do mês -->
+    <div class="calendario-dias">
+      <div 
+        *ngFor="let dia of dias" 
+        class="dia {{ dia.className }}"
+        [class.desabilitado]="dia.desabilitado"
+        [title]="dia.tempoEstudo ? 'Tempo estudado: ' + dia.tempoEstudo : ''"
+        (click)="selecionarDia(dia)"
+      >
+        <ng-container *ngIf="dia.numero !== 0">
+          <div class="dia-numero">{{ dia.numero }}</div>
+          <div class="tempo-estudo" *ngIf="dia.tempoEstudo">{{ dia.tempoEstudo }}</div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Detalhes do dia selecionado -->
+  <div class="detalhes-dia" *ngIf="diaSelecionado && detalheDia && exibirDetalhes">
+    <h4>Detalhes do dia {{ formatarDataDetalhes() }}</h4>
+    
+    <!-- Resumo do dia -->
+    <div class="resumo-dia">
+      <div class="card-resumo">
+        <div class="card-titulo">Tempo Total</div>
+        <div class="card-valor">{{ detalheDia.totalMinutos ? calendarioService.formatarTempoEstudo(detalheDia.totalMinutos) : '0min' }}</div>
+      </div>
+      
+      <div class="card-resumo">
+        <div class="card-titulo">Sessões</div>
+        <div class="card-valor">{{ detalheDia.sessoes.length }}</div>
+      </div>
+      
+      <div class="card-resumo">
+        <div class="card-titulo">Metas Ativas</div>
+        <div class="card-valor">{{ detalheDia.metas.length }}</div>
+      </div>
+      
+      <div class="card-resumo">
+        <div class="card-titulo">Anotações</div>
+        <div class="card-valor">{{ detalheDia.anotacoes ? detalheDia.anotacoes.length : 0 }}</div>
+      </div>
+    </div>
+    
+    <!-- Lista de sessões de estudo -->
+<div class="sessoes-lista" *ngIf="detalheDia.sessoes.length > 0">
+  <h5>Sessões de Estudo</h5>
+  
+  <div class="sessao-item" *ngFor="let sessao of detalheDia.sessoes">
+    <div class="sessao-cabecalho">
+      <div class="sessao-materia">{{ sessao.materiaNome }}</div>
+      <div class="sessao-topico" *ngIf="sessao.topicoNome">{{ sessao.topicoNome }}</div>
+      <div class="sessao-tempo">
+        {{ sessao.duracaoFormatada || (sessao.duracao > 0 ? calendarioService.formatarTempoEstudo(sessao.duracao) : '0min') }}
+      </div>
+    </div>
+    
+    <div class="sessao-horario">
+      {{ sessao.dataInicio | date:'HH:mm' }} - 
+      {{ sessao.dataFim ? (sessao.dataFim | date:'HH:mm') : 'Em andamento' }}
+    </div>
+    
+    <div class="sessao-status" [ngClass]="sessao.statusNormalizado || sessao.status?.toLowerCase()">
+      {{ sessao.statusNormalizado === 'emandamento' ? 'Em andamento' : 
+         sessao.statusNormalizado === 'pausada' ? 'Pausada' : 
+         sessao.statusNormalizado === 'finalizada' ? 'Finalizada' : 'Desconhecido' }}
+    </div>
+    
+    <div class="sessao-anotacoes" *ngIf="sessao.anotacoes && sessao.anotacoes.length > 0">
+      <h6>Anotações</h6>
+      <div class="anotacao-item" *ngFor="let anotacao of sessao.anotacoes">
+        <div class="anotacao-conteudo">{{ anotacao.conteudo }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    <!-- Lista de metas do dia -->
+    <div class="metas-lista" *ngIf="detalheDia.metas.length > 0">
+      <h5>Metas para o Dia</h5>
+      
+      <div class="meta-item" *ngFor="let meta of detalheDia.metas">
+        <div class="meta-cabecalho">
+          <div class="meta-titulo">{{ meta.titulo }}</div>
+          <div class="meta-status" [class.concluida]="meta.concluida">
+            {{ meta.concluida ? 'Concluída' : 'Em andamento' }}
+          </div>
+        </div>
+        
+        <div class="meta-materia">{{ meta.materiaNome }}</div>
+        
+        <div class="meta-descricao" *ngIf="meta.descricao">
+          {{ meta.descricao }}
+        </div>
+        
+        <div class="meta-progresso">
+          <div class="barra-container">
+            <div class="barra-progresso" [style.width.%]="meta.percentualConcluido"></div>
+          </div>
+          <div class="progresso-texto">
+            {{ meta.progresso }} / {{ meta.quantidade }} {{ meta.unidade }}
+            ({{ meta.percentualConcluido }}%)
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Lista de anotações do dia -->
+    <div class="anotacoes-lista" *ngIf="detalheDia.anotacoes && detalheDia.anotacoes.length > 0">
+      <h5>Anotações do Dia</h5>
+      
+      <div class="anotacao-item" *ngFor="let anotacao of detalheDia.anotacoes">
+        <div class="anotacao-cabecalho">
+          <div class="anotacao-titulo" *ngIf="anotacao.titulo">{{ anotacao.titulo }}</div>
+          <div class="anotacao-data">{{ anotacao.dataCriacao | date:'HH:mm' }}</div>
+        </div>
+        
+        <div class="anotacao-conteudo">{{ anotacao.conteudo }}</div>
+        
+        <div class="anotacao-tags" *ngIf="anotacao.tags && anotacao.tags.length > 0">
+          <span class="tag" *ngFor="let tag of anotacao.tags">{{ tag }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mensagem quando não há dados para exibir -->
+    <div class="sem-dados" *ngIf="detalheDia.sessoes.length === 0 && detalheDia.metas.length === 0 && (!detalheDia.anotacoes || detalheDia.anotacoes.length === 0)">
+      <p>Não há sessões de estudo, metas ou anotações registradas para este dia.</p>
+    </div>
+  </div>
+</div>

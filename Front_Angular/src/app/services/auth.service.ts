@@ -34,7 +34,6 @@ export class AuthService {
   storeToken(token: string): void {
     if (this.isBrowser()) {
       sessionStorage.setItem('token', token);
-      console.log('Token armazenado no sessionStorage:', token);
     }
   }
 
@@ -42,7 +41,6 @@ export class AuthService {
   getToken(): string | null {
     if (this.isBrowser()) {
       const token = sessionStorage.getItem('token');
-      console.log('Token recuperado do sessionStorage:', token);
       return token;
     }
     return null;
@@ -64,7 +62,6 @@ export class AuthService {
     }
     const token = this.getToken();
     const decodedToken = token ? this.jwtHelper.decodeToken(token) : null;
-    console.log('Dados decodificados do token:', decodedToken);
     return decodedToken;
   }
 
@@ -81,7 +78,6 @@ export class AuthService {
   logout(): void {
     if (this.isBrowser()) {
       sessionStorage.removeItem('token');
-      console.log('Token removido do sessionStorage');
     }
   }
 
