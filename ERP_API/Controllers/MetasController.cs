@@ -25,10 +25,8 @@ namespace ERP_API.Controllers
             _logger = logger;
         }
 
-        // Método auxiliar para obter o ID do usuário logado
         private int GetUsuarioId()
         {
-            // Obtém o ID do usuário a partir do token JWT
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {

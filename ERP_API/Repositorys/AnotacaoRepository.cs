@@ -179,7 +179,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 anotacao.Id = Convert.ToInt32(id);
 
-                // Buscar a anotação completa para obter as datas geradas pelo banco
                 var createdAnotacao = await GetByIdAsync(anotacao.Id, anotacao.UsuarioId);
                 if (createdAnotacao != null)
                 {

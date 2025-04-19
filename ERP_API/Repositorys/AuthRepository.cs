@@ -46,7 +46,6 @@ namespace ERP_API.Repositorys
                         Username = row["username"] != DBNull.Value ? Convert.ToString(row["username"]) : string.Empty,
                         Name = row["nome"] != DBNull.Value ? Convert.ToString(row["nome"]) : string.Empty,
                         Email = row["email"] != DBNull.Value ? Convert.ToString(row["email"]) : string.Empty,
-                        Password = row["password"] != DBNull.Value ? Convert.ToString(row["password"]) : string.Empty
                     };
 
                     _logger.LogInformation("Usuário encontrado: {Username}", validatedUser.Username);

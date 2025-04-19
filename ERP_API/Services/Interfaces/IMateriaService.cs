@@ -1,6 +1,7 @@
 ﻿using ERP_API.Models;
 using ERP_API.Models.DTOs;
 
+
 namespace ERP_API.Services.Interfaces
 {
     public interface IMateriaService
@@ -19,6 +20,14 @@ namespace ERP_API.Services.Interfaces
         /// <param name="usuarioId">ID do usuário para verificação de acesso</param>
         /// <returns>Matéria encontrada ou null</returns>
         Task<Materia?> GetByIdAsync(int id, int usuarioId);
+
+        /// <summary>
+        /// Obtém matérias por código de categoria
+        /// </summary>
+        /// <param name="categoriaId">ID da categoria</param>
+        /// <param name="usuarioId">ID do usuário para verificação de acesso</param>
+        /// <returns>Lista de matérias da categoria</returns>
+        Task<IEnumerable<Materia>> GetByCategoriaIdAsync(int categoriaId, int usuarioId);
 
         /// <summary>
         /// Cria uma nova matéria

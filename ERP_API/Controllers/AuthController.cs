@@ -21,7 +21,6 @@ namespace ERP_API.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
-            // Verifica se o modelo é válido (validações via DataAnnotations)
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -83,20 +82,17 @@ namespace ERP_API.Controllers
         [Authorize]
         public IActionResult ValidateTokenDebug()
         {
-            // Verifica o cabeçalho Authorization
             var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
             if (string.IsNullOrEmpty(authHeader))
             {
                 return BadRequest(new { message = "Cabeçalho Authorization não encontrado" });
             }
 
-            // Informações do token para debug
             var userId = GetUsuarioIdFromToken();
             var username = GetUsernameFromToken();
             var name = GetUserNameFromToken();
             var email = GetEmailFromToken();
 
-            // Retorna informações sobre o cabeçalho e claims para debug
             return Ok(new
             {
                 authorizationHeader = authHeader,

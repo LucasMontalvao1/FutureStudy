@@ -30,7 +30,6 @@ export class MetasService {
       return headers;
     }
   
-
   // Método para visualizar o token atual (apenas para debug)
   private logTokenInfo() {
     const token = this.authService.getToken();
@@ -102,6 +101,39 @@ export class MetasService {
       }),
       catchError(error => {
         console.error(`Falha ao buscar metas para ${data}. Erro:`, error);
+        
+        if (error.status === 401) {
+          console.error('ERRO DE AUTENTICAÇÃO: Token inválido ou expirado');
+          this.logTokenInfo();
+        }
+        
+        return of([]);
+      })
+    );
+  }
+  
+  // Obter metas por período - Método novo necessário para o calendário
+  getMetasByPeriodo(dataInicio: string, dataFim: string): Observable<any[]> {
+    console.log('=== Iniciando getMetasByPeriodo ===');
+    
+    // Parâmetros conforme esperado pela API
+    const params = new HttpParams()
+      .append('dataInicio', dataInicio)
+      .append('dataFim', dataFim);
+    
+    // Log da URL completa para depuração
+    console.log(`URL da requisição: ${this.apiUrl}/por-data com parâmetros:`, params.toString());
+    
+    return this.http.get<any[]>(`${this.apiUrl}/por-data`, { 
+      headers: this.getHeaders(),
+      params 
+    }).pipe(
+      tap(response => {
+        console.log(`Resposta getMetasByPeriodo de ${dataInicio} até ${dataFim}:`, response);
+        console.log('=== Requisição getMetasByPeriodo bem-sucedida ===');
+      }),
+      catchError(error => {
+        console.error(`Falha ao buscar metas para período de ${dataInicio} até ${dataFim}. Erro:`, error);
         
         if (error.status === 401) {
           console.error('ERRO DE AUTENTICAÇÃO: Token inválido ou expirado');
@@ -259,12 +291,31 @@ export class MetasService {
     );
   }
 
+  // Método adaptado para o componente do calendário (interface simplificada)
+  atualizarMeta(meta: any): Observable<any> {
+    console.log(`=== Iniciando atualizarMeta para meta ${meta.id} ===`);
+    console.log('Dados da meta a atualizar:', meta);
+    
+    // Se a meta foi concluída, usamos o endpoint específico para conclusão
+    if (meta.concluida) {
+      return this.concluirMeta(meta.id);
+    }
+    
+    // Se o progresso foi atualizado, usamos o endpoint de progresso
+    if (meta.progresso !== undefined) {
+      return this.updateProgressoMeta(meta.id, meta.progresso);
+    }
+    
+    // Caso contrário, atualização completa
+    return this.updateMeta(meta.id, meta);
+  }
+
   // Atualizar o progresso de uma meta
   updateProgressoMeta(id: number, quantidade: number): Observable<any> {
     console.log(`=== Iniciando updateProgressoMeta para meta ${id} ===`);
     console.log(`Quantidade a atualizar: ${quantidade}`);
     
-    return this.http.patch<any>(`${this.apiUrl}/${id}/progresso`, quantidade, {
+    return this.http.patch<any>(`${this.apiUrl}/${id}/progresso`, { quantidade }, {
       headers: this.getHeaders()
     }).pipe(
       tap(response => {
@@ -330,5 +381,10 @@ export class MetasService {
         throw error;
       })
     );
+  }
+  
+  // Alias para deleteMeta para compatibilidade com o componente de calendário
+  excluirMeta(id: number): Observable<any> {
+    return this.deleteMeta(id);
   }
 }

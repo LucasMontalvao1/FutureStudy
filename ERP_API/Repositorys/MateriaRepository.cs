@@ -22,7 +22,7 @@ namespace ERP_API.Repositorys
             try
             {
                 string query = @"
-                    SELECT id, usuario_id, nome, cor, criado_em, atualizado_em
+                    SELECT id, usuario_id, nome, cor, criado_em, atualizado_em, categoria_id
                     FROM materias
                     WHERE usuario_id = @usuarioId
                     ORDER BY nome";
@@ -55,7 +55,7 @@ namespace ERP_API.Repositorys
             try
             {
                 string query = @"
-                    SELECT id, usuario_id, nome, cor, criado_em, atualizado_em
+                    SELECT id, usuario_id, nome, cor, criado_em, atualizado_em, categoria_id
                     FROM materias
                     WHERE id = @id";
 
@@ -123,7 +123,6 @@ namespace ERP_API.Repositorys
                     new MySqlParameter("@nome", nome)
                 };
 
-                // Se for uma atualização, ignore a própria matéria na verificação de duplicidade
                 if (ignoreMateriaId.HasValue)
                 {
                     query += " AND id != @ignoreMateriaId";
@@ -140,6 +139,42 @@ namespace ERP_API.Repositorys
             }
         }
 
+        public async Task<IEnumerable<Materia>> GetByCategoriaIdAsync(int categoriaId, int usuarioId)
+        {
+            try
+            {
+                string query = @"
+            SELECT m.id, m.usuario_id, m.nome, m.cor, m.criado_em, m.atualizado_em, m.categoria_id
+            FROM materias m
+            INNER JOIN categorias c ON m.categoria_id = c.id
+            WHERE m.categoria_id = @categoriaId AND m.usuario_id = @usuarioId
+            ORDER BY m.nome";
+
+                var parameters = new MySqlParameter[]
+                {
+            new MySqlParameter("@categoriaId", categoriaId),
+            new MySqlParameter("@usuarioId", usuarioId)
+                };
+
+                var dataTable = await _databaseService.ExecuteQueryAsync(query, parameters);
+                var materias = new List<Materia>();
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    materias.Add(MapRowToMateria(row));
+                }
+
+                _logger.LogInformation("Obtidas {Count} matérias para a categoria {CategoriaId} do usuário {UsuarioId}",
+                    materias.Count, categoriaId, usuarioId);
+                return materias;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter matérias da categoria {CategoriaId} para o usuário {UsuarioId}",
+                    categoriaId, usuarioId);
+                throw;
+            }
+        }
         public async Task<Materia> CreateAsync(Materia materia)
         {
             try
@@ -159,7 +194,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 materia.Id = Convert.ToInt32(id);
 
-                // Buscar a matéria completa para obter as datas geradas pelo banco
                 var createdMateria = await GetByIdAsync(materia.Id);
                 if (createdMateria != null)
                 {
@@ -250,7 +284,8 @@ namespace ERP_API.Repositorys
                 Nome = row["nome"].ToString() ?? string.Empty,
                 Cor = row["cor"].ToString() ?? "#CCCCCC",
                 CriadoEm = Convert.ToDateTime(row["criado_em"]),
-                AtualizadoEm = Convert.ToDateTime(row["atualizado_em"])
+                AtualizadoEm = Convert.ToDateTime(row["atualizado_em"]),
+                CategoriaId = Convert.ToInt32(row["categoria_id"]),
             };
         }
     }

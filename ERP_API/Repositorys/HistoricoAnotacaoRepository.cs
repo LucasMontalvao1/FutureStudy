@@ -75,7 +75,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 historico.Id = Convert.ToInt32(id);
 
-                // Buscar o registro completo para obter a data gerada pelo banco
                 string selectQuery = await _sqlLoader.LoadSqlAsync("HistoricoAnotacoes/GetById.sql");
                 var selectParameters = new MySqlParameter[]
                 {

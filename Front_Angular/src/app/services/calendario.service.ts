@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators'; // Adicionando o import do map
+import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from './auth.service';
@@ -11,14 +11,41 @@ import { AnotacoesService } from './anotacoes.service';
 export interface DiaCalendario {
   dia: number;
   minutosEstudados: number;
+  totalSessoes?: number;
+  metas?: any[];
+}
+
+export interface MateriaResumo {
+  id: number;
+  nome: string;
+  tempoEstudo: number;
+  categoria?: string;
+  cor?: string;
+}
+
+export interface TopicoResumo {
+  id: number;
+  nome: string;
+  materiaId: number;
+  materiaNome: string;
+  tempoEstudo: number;
+}
+
+export interface CategoriaResumo {
+  id: any;
+  nome: string;
+  tempoEstudo: number;
+  cor?: string;
 }
 
 export interface DetalhesDia {
   sessoes: any[];
   totalMinutos: number;
-  materias: { nome: string; tempoEstudo: number }[];
+  materias: MateriaResumo[];
+  topicos: TopicoResumo[];
   metas: any[];
   anotacoes: any[];
+  categorias: CategoriaResumo[];
 }
 
 @Injectable({
@@ -77,7 +104,15 @@ export class CalendarioService {
     return this.http.get<DiaCalendario[]>(`${this.apiUrl}/calendario`, {
       headers: this.getHeaders(),
       params
-    });
+    }).pipe(
+      tap(response => {
+        console.log(`Obtidos dados do calendário para ${mes}/${ano}:`, response);
+      }),
+      catchError(error => {
+        console.error('Erro ao obter dados do calendário:', error);
+        return of([]);
+      })
+    );
   }
 
   // Modificar esta função para retornar Observable<any[]> em vez de DetalhesDia
@@ -103,7 +138,78 @@ export class CalendarioService {
     return this.http.get<any[]>(`${this.apiUrl}`, {
       headers: this.getHeaders(),
       params
-    });
+    }).pipe(
+      tap(response => {
+        console.log(`Obtidos detalhes para ${this.formatarData(data)}:`, response);
+      }),
+      catchError(error => {
+        console.error(`Erro ao obter detalhes para ${this.formatarData(data)}:`, error);
+        return of([]);
+      })
+    );
+  }
+
+  // Método para atualizar uma sessão
+  atualizarSessao(sessao: any): Observable<any> {
+    if (!this.isBrowser) {
+      return of(null);
+    }
+
+    console.log(`Atualizando sessão ${sessao.id}:`, sessao);
+
+    return this.http.put<any>(`${this.apiUrl}/${sessao.id}`, sessao, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => {
+        console.log(`Sessão ${sessao.id} atualizada com sucesso:`, response);
+      }),
+      catchError(error => {
+        console.error(`Erro ao atualizar sessão ${sessao.id}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  // Método para criar uma nova sessão
+  criarSessao(sessao: any): Observable<any> {
+    if (!this.isBrowser) {
+      return of(null);
+    }
+
+    console.log('Criando nova sessão:', sessao);
+
+    return this.http.post<any>(`${this.apiUrl}`, sessao, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => {
+        console.log('Sessão criada com sucesso:', response);
+      }),
+      catchError(error => {
+        console.error('Erro ao criar sessão:', error);
+        throw error;
+      })
+    );
+  }
+
+  // Método para excluir uma sessão
+  excluirSessao(id: number): Observable<any> {
+    if (!this.isBrowser) {
+      return of(null);
+    }
+
+    console.log(`Excluindo sessão ${id}`);
+
+    return this.http.delete<any>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => {
+        console.log(`Sessão ${id} excluída com sucesso:`, response);
+      }),
+      catchError(error => {
+        console.error(`Erro ao excluir sessão ${id}:`, error);
+        throw error;
+      })
+    );
   }
 
   processarDetalhes(sessoes: any[] = [], metas: any[] = [], anotacoes: any[] = []): DetalhesDia {
@@ -133,44 +239,116 @@ export class CalendarioService {
         // Normalizar o status para garantir consistência
         let statusNormalizado = s.status ? s.status.toLowerCase() : '';
         if (statusNormalizado === 'concluida') statusNormalizado = 'finalizada';
+        if (statusNormalizado === 'em_andamento') statusNormalizado = 'emandamento';
         
         return {
           ...s,
           duracao: minutos,
           duracaoFormatada: this.formatarTempoEstudo(minutos),
           duracaoCalculada: duracaoCalculada,
-          statusNormalizado: statusNormalizado
+          statusNormalizado: statusNormalizado,
+          // Garantir que todas as sessões tenham uma categoria (mesmo que seja vazia)
+          categoriaMateria: s.categoriaMateria || 'Sem categoria'
         };
       }),
       totalMinutos: 0,
       materias: [],
-      metas: metas || [],
-      anotacoes: anotacoes || []
+      topicos: [],
+      metas: this.processarMetas(metas) || [],
+      anotacoes: anotacoes || [],
+      categorias: []
     };
   
     // Calcular o total de minutos somando todas as sessões
     detalhes.totalMinutos = detalhes.sessoes.reduce((total, sessao) => total + (sessao.duracao || 0), 0);
   
     // Agrupa por matéria
-    const materiasPorId: { [id: number]: { nome: string, tempoEstudo: number } } = {};
+    const materiasPorId: { [id: number]: MateriaResumo } = {};
+    
+    // Agrupa por tópico
+    const topicosPorId: { [key: string]: TopicoResumo } = {};
+    
+    // Agrupa por categoria
+    const categoriasPorNome: { [nome: string]: CategoriaResumo } = {};
   
-    // Processa cada sessão para agrupar por matéria
+    // Processa cada sessão para agrupar
     detalhes.sessoes.forEach(sessao => {
       // Agrupa por matéria
       if (!materiasPorId[sessao.materiaId]) {
         materiasPorId[sessao.materiaId] = {
+          id: sessao.materiaId,
           nome: sessao.materiaNome || 'Matéria não especificada',
-          tempoEstudo: 0
+          tempoEstudo: 0,
+          categoria: sessao.categoriaMateria || 'Sem categoria',
+          cor: sessao.materiaCor
         };
       }
       materiasPorId[sessao.materiaId].tempoEstudo += sessao.duracao || 0;
+      
+      // Agrupa por tópico
+      if (sessao.topicoId && sessao.topicoNome) {
+        const topicoKey = `${sessao.materiaId}-${sessao.topicoId}`;
+        if (!topicosPorId[topicoKey]) {
+          topicosPorId[topicoKey] = {
+            id: sessao.topicoId,
+            nome: sessao.topicoNome,
+            materiaId: sessao.materiaId,
+            materiaNome: sessao.materiaNome || 'Matéria não especificada',
+            tempoEstudo: 0
+          };
+        }
+        topicosPorId[topicoKey].tempoEstudo += sessao.duracao || 0;
+      }
+      
+      // Agrupa por categoria
+      const categoria = sessao.categoriaMateria || 'Sem categoria';
+      if (!categoriasPorNome[categoria]) {
+        categoriasPorNome[categoria] = {
+          id: categoria.id,
+          nome: categoria,
+          tempoEstudo: 0,
+          cor: sessao.categoriaCor
+        };
+      }
+      categoriasPorNome[categoria].tempoEstudo += sessao.duracao || 0;
     });
   
-    // Converte o objeto de matérias em array
+    // Adiciona categorização para anotações se não existir
+    detalhes.anotacoes = detalhes.anotacoes.map(anotacao => {
+      return {
+        ...anotacao,
+        materiaId: anotacao.materiaId || null,
+        materiaNome: anotacao.materiaNome || 'Sem matéria',
+        topicoId: anotacao.topicoId || null,
+        topicoNome: anotacao.topicoNome || null,
+        categoriaMateria: anotacao.categoriaMateria || 'Sem categoria'
+      };
+    });
+
+    // Converte os objetos em arrays
     detalhes.materias = Object.values(materiasPorId);
+    detalhes.topicos = Object.values(topicosPorId);
+    detalhes.categorias = Object.values(categoriasPorNome);
   
     console.log('Detalhes processados:', detalhes);
     return detalhes;
+  }
+  
+  // Método para processar e normalizar metas
+  private processarMetas(metas: any[] = []): any[] {
+    return metas.map(meta => {
+      // Garantir que todas as metas tenham as propriedades necessárias
+      const percentualConcluido = meta.quantidade > 0
+        ? Math.round((meta.progresso / meta.quantidade) * 100)
+        : 0;
+        
+      return {
+        ...meta,
+        percentualConcluido,
+        // Garantir que a meta tenha uma categoria (mesmo que seja vazia)
+        categoriaMateria: meta.categoriaMateria || 'Sem categoria'
+      };
+    });
   }
   
   // Método para formatar data como YYYY-MM-DD
@@ -224,13 +402,100 @@ export class CalendarioService {
   formatarStatus(status: string): string {
     switch (status && status.toLowerCase()) {
       case 'em_andamento':
+      case 'emandamento':
         return 'Em andamento';
       case 'pausada':
         return 'Pausada';
       case 'concluida':
+      case 'finalizada':
         return 'Finalizada';
       default:
         return 'Desconhecido';
     }
+  }
+
+  // Novos métodos para análise por categoria/matéria/tópico
+  getTempoEstudoPorCategoria(dados: DetalhesDia): {nome: string, tempo: number, percentual: number}[] {
+    if (!dados || !dados.categorias || dados.categorias.length === 0) {
+      return [];
+    }
+
+    return dados.categorias.map(cat => {
+      return {
+        id: cat.id,
+        nome: cat.nome,
+        tempo: cat.tempoEstudo,
+        percentual: dados.totalMinutos > 0 ? (cat.tempoEstudo / dados.totalMinutos) * 100 : 0
+      };
+    }).sort((a, b) => b.tempo - a.tempo);
+  }
+
+  getTempoEstudoPorMateria(dados: DetalhesDia): {id: number, nome: string, tempo: number, percentual: number}[] {
+    if (!dados || !dados.materias || dados.materias.length === 0) {
+      return [];
+    }
+
+    return dados.materias.map(mat => {
+      return {
+        id: mat.id,
+        nome: mat.nome,
+        tempo: mat.tempoEstudo,
+        percentual: dados.totalMinutos > 0 ? (mat.tempoEstudo / dados.totalMinutos) * 100 : 0
+      };
+    }).sort((a, b) => b.tempo - a.tempo);
+  }
+
+  getTempoEstudoPorTopico(dados: DetalhesDia): {id: number, nome: string, materiaId: number, materiaNome: string, tempo: number, percentual: number}[] {
+    if (!dados || !dados.topicos || dados.topicos.length === 0) {
+      return [];
+    }
+
+    return dados.topicos.map(top => {
+      return {
+        id: top.id,
+        nome: top.nome,
+        materiaId: top.materiaId,
+        materiaNome: top.materiaNome,
+        tempo: top.tempoEstudo,
+        percentual: dados.totalMinutos > 0 ? (top.tempoEstudo / dados.totalMinutos) * 100 : 0
+      };
+    }).sort((a, b) => b.tempo - a.tempo);
+  }
+
+  getAnotacoesPorMateria(dados: DetalhesDia): {[materiaId: number]: any[]} {
+    if (!dados || !dados.anotacoes || dados.anotacoes.length === 0) {
+      return {};
+    }
+
+    const resultado: {[materiaId: number]: any[]} = {};
+    
+    dados.anotacoes.forEach(anotacao => {
+      if (anotacao.materiaId) {
+        if (!resultado[anotacao.materiaId]) {
+          resultado[anotacao.materiaId] = [];
+        }
+        resultado[anotacao.materiaId].push(anotacao);
+      }
+    });
+
+    return resultado;
+  }
+
+  getAnotacoesPorCategoria(dados: DetalhesDia): {[categoria: string]: any[]} {
+    if (!dados || !dados.anotacoes || dados.anotacoes.length === 0) {
+      return {};
+    }
+
+    const resultado: {[categoria: string]: any[]} = {};
+    
+    dados.anotacoes.forEach(anotacao => {
+      const categoria = anotacao.categoriaMateria || 'Sem categoria';
+      if (!resultado[categoria]) {
+        resultado[categoria] = [];
+      }
+      resultado[categoria].push(anotacao);
+    });
+
+    return resultado;
   }
 }

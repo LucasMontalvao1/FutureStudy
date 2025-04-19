@@ -1,5 +1,4 @@
 ﻿using ERP_API.Models;
-
 namespace ERP_API.Repositorys.Interfaces
 {
     public interface IMateriaRepository
@@ -17,6 +16,14 @@ namespace ERP_API.Repositorys.Interfaces
         /// <param name="id">ID da matéria</param>
         /// <returns>Matéria encontrada ou null</returns>
         Task<Materia?> GetByIdAsync(int id);
+
+        /// <summary>
+        /// Obtém matérias por código de categoria
+        /// </summary>
+        /// <param name="categoriaId">ID da categoria</param>
+        /// <param name="usuarioId">ID do usuário</param>
+        /// <returns>Lista de matérias da categoria</returns>
+        Task<IEnumerable<Materia>> GetByCategoriaIdAsync(int categoriaId, int usuarioId);
 
         /// <summary>
         /// Verifica se uma matéria pertence a um usuário específico

@@ -123,7 +123,6 @@ namespace ERP_API.Repositorys
                     new MySqlParameter("@nome", nome)
                 };
 
-                // Se for uma atualização, ignore a própria categoria na verificação de duplicidade
                 if (ignoreCategoriaId.HasValue)
                 {
                     query += " AND id != @ignoreCategoriaId";
@@ -159,7 +158,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 categoria.Id = Convert.ToInt32(id);
 
-                // Buscar a categoria completa para obter as datas geradas pelo banco
                 var createdCategoria = await GetByIdAsync(categoria.Id);
                 if (createdCategoria != null)
                 {

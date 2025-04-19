@@ -52,7 +52,6 @@ namespace ERP_API.Services
             // Se a data final não for fornecida, use a data atual
             dataFim ??= DateTime.Now;
 
-            // Obter as anotações do repositório
             var anotacoes = await _anotacaoRepository.GetByDateRangeAsync(usuarioId, dataInicio, dataFim.Value);
 
             _logger.LogInformation("Retornando {Count} anotações entre {DataInicio} e {DataFim} para o usuário {UsuarioId}",
@@ -62,7 +61,6 @@ namespace ERP_API.Services
         }
         public async Task<IEnumerable<Anotacao>> GetAllBySessaoAsync(int sessaoId, int usuarioId)
         {
-            // Verificar se a sessão existe e pertence ao usuário
             var sessao = await _sessaoRepository.GetByIdAsync(sessaoId, usuarioId);
             if (sessao == null)
             {
@@ -79,75 +77,63 @@ namespace ERP_API.Services
 
         public async Task<Anotacao> CreateAsync(AnotacaoRequestDto dto, int usuarioId)
         {
-            // Validar o DTO usando FluentValidation
             var validationResult = await _anotacaoRequestValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
 
-            // Verificar se a sessão existe e pertence ao usuário
             var sessao = await _sessaoRepository.GetByIdAsync(dto.SessaoId, usuarioId);
             if (sessao == null)
             {
                 throw new InvalidOperationException("Sessão não encontrada ou não pertence ao usuário.");
             }
 
-            // Mapear para entidade
             var anotacao = _mapper.Map<Anotacao>(dto);
             anotacao.UsuarioId = usuarioId;
 
-            // Validar entidade
             var entityValidation = await _anotacaoValidator.ValidateAsync(anotacao);
             if (!entityValidation.IsValid)
             {
                 throw new ValidationException(entityValidation.Errors);
             }
 
-            // Criar a anotação
             return await _anotacaoRepository.CreateAsync(anotacao);
         }
 
         public async Task<bool> UpdateAsync(int id, AnotacaoUpdateDto dto, int usuarioId)
         {
-            // Validar o DTO usando FluentValidation
             var validationResult = await _anotacaoUpdateValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
                 throw new ValidationException(validationResult.Errors);
             }
 
-            // Verificar se a anotação existe e pertence ao usuário
             var anotacao = await _anotacaoRepository.GetByIdAsync(id, usuarioId);
             if (anotacao == null)
             {
                 throw new InvalidOperationException("Anotação não encontrada ou não pertence ao usuário.");
             }
 
-            // Salvar o conteúdo anterior no histórico (apenas se o conteúdo for modificado)
             if (!string.IsNullOrEmpty(dto.Conteudo) && dto.Conteudo != anotacao.Conteudo)
             {
                 await _historicoService.RegistrarAlteracaoAsync(id, usuarioId, anotacao.Conteudo);
             }
 
-            // Atualizar os campos da anotação
             anotacao.Titulo = !string.IsNullOrEmpty(dto.Titulo) ? dto.Titulo : anotacao.Titulo;
             anotacao.Conteudo = !string.IsNullOrEmpty(dto.Conteudo) ? dto.Conteudo : anotacao.Conteudo;
 
-            // Validar entidade
             var entityValidation = await _anotacaoValidator.ValidateAsync(anotacao);
             if (!entityValidation.IsValid)
             {
                 throw new ValidationException(entityValidation.Errors);
             }
 
-            // Atualizar a anotação
             return await _anotacaoRepository.UpdateAsync(anotacao);
         }
 
         public async Task<bool> DeleteAsync(int id, int usuarioId)
         {
-            // Verificar se a anotação existe e pertence ao usuário
             var anotacao = await _anotacaoRepository.GetByIdAsync(id, usuarioId);
             if (anotacao == null)
             {

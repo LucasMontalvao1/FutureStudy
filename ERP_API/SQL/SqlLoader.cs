@@ -22,7 +22,7 @@ namespace ERP_API.SQL
         /// <summary>
         /// Carrega um arquivo SQL do assembly atual
         /// </summary>
-        /// <param name="path">Caminho relativo do arquivo SQL (por exemplo: "Metas/GetAll.sql")</param>
+        /// <param name="path">Caminho relativo do arquivo SQL </param>
         /// <returns>Conteúdo do arquivo SQL</returns>
         public async Task<string> LoadSqlAsync(string path)
         {

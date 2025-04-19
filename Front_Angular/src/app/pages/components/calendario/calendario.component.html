@@ -63,6 +63,13 @@
       <div class="card-resumo">
         <div class="card-titulo">Tempo Total</div>
         <div class="card-valor">{{ detalheDia.totalMinutos ? calendarioService.formatarTempoEstudo(detalheDia.totalMinutos) : '0min' }}</div>
+        <div class="tendencia-estudo" *ngIf="mediaTempoEstudoDiasAnteriores > 0">
+          <span [class]="getClasseTendencia()">
+            <i [class]="getIconeTendencia()"></i>
+            {{ tendenciaEstudo === 'subindo' ? 'Acima da média' : 
+               tendenciaEstudo === 'descendo' ? 'Abaixo da média' : 'Na média' }}
+          </span>
+        </div>
       </div>
       
       <div class="card-resumo">
@@ -81,52 +88,213 @@
       </div>
     </div>
     
-    <!-- Lista de sessões de estudo -->
-<div class="sessoes-lista" *ngIf="detalheDia.sessoes.length > 0">
-  <h5>Sessões de Estudo</h5>
+    <!-- Filtros e opções de visualização -->
+    <div class="filtros-container">
+      <div class="filtros-titulo">Visualizar por:</div>
+      
+      <div class="filtros-botoes">
+        <button 
+          class="btn-filtro" 
+          [class.ativo]="visualizacaoAtiva === 'tudo'"
+          (click)="resetarFiltros()"
+        >
+          Tudo
+        </button>
+        
+        <button 
+          class="btn-filtro" 
+          [class.ativo]="visualizacaoAtiva === 'categoria'"
+          (click)="visualizacaoAtiva = 'categoria'"
+        >
+          Categorias
+        </button>
+        
+        <button 
+          class="btn-filtro" 
+          [class.ativo]="visualizacaoAtiva === 'materia'"
+          (click)="visualizacaoAtiva = 'materia'"
+        >
+          Matérias
+        </button>
+        
+        <button 
+          class="btn-filtro" 
+          [class.ativo]="visualizacaoAtiva === 'topico'"
+          (click)="visualizacaoAtiva = 'topico'"
+        >
+          Tópicos
+        </button>
+      </div>
+    </div>
+    
+    <!-- Distribuição de tempo por categoria (gráfico simples) -->
+    <div class="distribuicao-tempo" *ngIf="visualizacaoAtiva === 'categoria' && detalheDia.categorias.length > 0">
+      <h5>Distribuição de tempo por categoria</h5>
+      
+      <div class="grafico-barras">
+        <div class="barra-item" *ngFor="let categoria of detalheDia.categorias">
+          <div class="barra-info">
+            <div class="barra-label" [style.color]="categoria.cor">
+              {{ categoria.nome }}
+            </div>
+            <div class="barra-valor">
+              {{ calendarioService.formatarTempoEstudo(categoria.tempoEstudo) }}
+              ({{ getPercentualTempoCategoria(categoria.id) }}%)
+            </div>
+          </div>
+          
+          <div class="barra-container">
+            <div 
+              class="barra-progresso" 
+              [style.width.%]="getPercentualTempoCategoria(categoria.id)"
+              [style.background-color]="categoria.cor || '#4263eb'"
+            ></div>
+          </div>
+          
+          <button 
+            class="btn-pequeno"
+            (click)="aplicarFiltroCategoria(categoria.id)"
+          >
+            Ver detalhes
+          </button>
+        </div>
+      </div>
+    </div>
+    
+<!-- Distribuição de tempo por matéria -->
+<div class="distribuicao-tempo" *ngIf="visualizacaoAtiva === 'materia' && detalheDia.materias.length > 0">
+  <h5>Distribuição de tempo por matéria</h5>
   
-  <div class="sessao-item" *ngFor="let sessao of detalheDia.sessoes">
-    <div class="sessao-cabecalho">
-      <div class="sessao-materia">{{ sessao.materiaNome }}</div>
-      <div class="sessao-topico" *ngIf="sessao.topicoNome">{{ sessao.topicoNome }}</div>
-      <div class="sessao-tempo">
-        {{ sessao.duracaoFormatada || (sessao.duracao > 0 ? calendarioService.formatarTempoEstudo(sessao.duracao) : '0min') }}
+  <div class="grafico-barras">
+    <div class="barra-item" *ngFor="let materia of detalheDia.materias">
+      <div class="barra-info">
+        <div class="barra-label" [style.color]="materia.cor || '#4263eb'">
+          {{ materia.nome }}
+        </div>
+        <div class="barra-valor">
+          {{ calendarioService.formatarTempoEstudo(materia.tempoEstudo) }}
+          ({{ getPercentualTempoMateria(materia.id) }}%)
+        </div>
       </div>
-    </div>
-    
-    <div class="sessao-horario">
-      {{ sessao.dataInicio | date:'HH:mm' }} - 
-      {{ sessao.dataFim ? (sessao.dataFim | date:'HH:mm') : 'Em andamento' }}
-    </div>
-    
-    <div class="sessao-status" [ngClass]="sessao.statusNormalizado || sessao.status?.toLowerCase()">
-      {{ sessao.statusNormalizado === 'emandamento' ? 'Em andamento' : 
-         sessao.statusNormalizado === 'pausada' ? 'Pausada' : 
-         sessao.statusNormalizado === 'finalizada' ? 'Finalizada' : 'Desconhecido' }}
-    </div>
-    
-    <div class="sessao-anotacoes" *ngIf="sessao.anotacoes && sessao.anotacoes.length > 0">
-      <h6>Anotações</h6>
-      <div class="anotacao-item" *ngFor="let anotacao of sessao.anotacoes">
-        <div class="anotacao-conteudo">{{ anotacao.conteudo }}</div>
+      
+      <div class="barra-container">
+        <div 
+          class="barra-progresso" 
+          [style.width.%]="getPercentualTempoMateria(materia.id)"
+          [style.background-color]="materia.cor || '#4263eb'"
+        ></div>
       </div>
+      
+      <button 
+        class="btn-pequeno"
+        (click)="aplicarFiltroMateria(materia.id)"
+      >
+        Ver detalhes
+      </button>
     </div>
   </div>
 </div>
     
+    <!-- Seletor de filtros específicos -->
+    <div class="seletor-filtros" *ngIf="visualizacaoAtiva !== 'tudo'">
+      <div class="filtro-atual">
+        <span *ngIf="visualizacaoAtiva === 'categoria' && filtroCategoria">
+          Categoria: <strong>{{ filtroCategoria }}</strong>
+        </span>
+        <span *ngIf="visualizacaoAtiva === 'materia' && filtroMateria">
+          Matéria: <strong>{{ getMaterialNome(filtroMateria) }}</strong>
+        </span>
+        <span *ngIf="visualizacaoAtiva === 'topico' && filtroTopico">
+          Tópico: <strong>{{ getTopicoNome(filtroTopico) }}</strong>
+        </span>
+        <button class="btn-limpar-filtro" (click)="resetarFiltros()" *ngIf="filtroCategoria || filtroMateria || filtroTopico">
+          <i class="fa fa-times"></i> Limpar filtro
+        </button>
+      </div>
+      
+      <div class="filtro-opcoes" *ngIf="!filtroCategoria && !filtroMateria && !filtroTopico">
+        <div class="opcoes-lista" *ngIf="visualizacaoAtiva === 'categoria'">
+          <div class="opcao-item" *ngFor="let categoria of categoriasDisponiveis" (click)="aplicarFiltroCategoria(categoria.id)">
+            <div class="opcao-cor" [style.background-color]="categoria.cor"></div>
+            <div class="opcao-nome">{{ categoria.nome }}</div>
+            <div class="opcao-tempo">{{ calendarioService.formatarTempoEstudo(categoria.tempoEstudo) }}</div>
+          </div>
+        </div>
+        
+        <div class="opcoes-lista" *ngIf="visualizacaoAtiva === 'materia'">
+          <div class="opcao-item" *ngFor="let materia of materiasDisponiveis" (click)="aplicarFiltroMateria(materia.id)">
+            <div class="opcao-cor" [style.background-color]="materia.cor"></div>
+            <div class="opcao-nome">{{ materia.nome }}</div>
+            <div class="opcao-tempo">{{ calendarioService.formatarTempoEstudo(materia.tempoEstudo) }}</div>
+          </div>
+        </div>
+        
+        <div class="opcoes-lista" *ngIf="visualizacaoAtiva === 'topico'">
+          <div class="opcao-item" *ngFor="let topico of topicosDisponiveis" (click)="aplicarFiltroTopico(topico.id)">
+            <div class="opcao-nome">{{ topico.nome }}</div>
+            <div class="opcao-subtitulo">{{ topico.materiaNome }}</div>
+            <div class="opcao-tempo">{{ calendarioService.formatarTempoEstudo(topico.tempoEstudo) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Lista de sessões de estudo -->
+    <div class="sessoes-lista" *ngIf="getSessoesFiltered().length > 0">
+      <h5>Sessões de Estudo</h5>
+      
+      <div class="sessao-item" *ngFor="let sessao of getSessoesFiltered()">
+        <div class="sessao-cabecalho" (click)="toggleSessao(sessao)">
+          <div class="sessao-categoria" [style.color]="sessao.categoriaCor">
+            {{ sessao.categoriaNome }}
+          </div>
+          <div class="sessao-materia">{{ sessao.materiaNome }}</div>
+          <div class="sessao-topico" *ngIf="sessao.topicoNome">{{ sessao.topicoNome }}</div>
+          <div class="sessao-tempo">
+            {{ sessao.duracaoFormatada }}
+          </div>
+          <div class="sessao-toggle">
+            <i class="fa" [class]="sessao.expandido ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </div>
+        </div>
+        
+        <div class="sessao-detalhes" *ngIf="sessao.expandido">
+          <div class="sessao-horario">
+            {{ sessao.dataInicio | date:'HH:mm' }} - 
+            {{ sessao.dataFim ? (sessao.dataFim | date:'HH:mm') : 'Em andamento' }}
+          </div>
+          
+          <div class="sessao-status" [class]="sessao.statusNormalizado">
+            {{ formatarStatus(sessao.status) }}
+          </div>
+          
+          <div class="sessao-anotacoes" *ngIf="sessao.anotacoes && sessao.anotacoes.length > 0">
+            <h6>Anotações</h6>
+            <div class="anotacao-item" *ngFor="let anotacao of sessao.anotacoes">
+              <div class="anotacao-conteudo">{{ anotacao.conteudo }}</div>
+              <div class="anotacao-data">{{ anotacao.dataCriacao | date:'HH:mm' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- Lista de metas do dia -->
-    <div class="metas-lista" *ngIf="detalheDia.metas.length > 0">
+    <div class="metas-lista" *ngIf="getMetasFiltered().length > 0">
       <h5>Metas para o Dia</h5>
       
-      <div class="meta-item" *ngFor="let meta of detalheDia.metas">
+      <div class="meta-item" *ngFor="let meta of getMetasFiltered()">
         <div class="meta-cabecalho">
+          <div class="meta-categoria" *ngIf="meta.categoriaMateria" [style.color]="getCorCategoria(meta.categoriaMateria)">
+            {{ meta.categoriaMateria }}
+          </div>
           <div class="meta-titulo">{{ meta.titulo }}</div>
           <div class="meta-status" [class.concluida]="meta.concluida">
             {{ meta.concluida ? 'Concluída' : 'Em andamento' }}
           </div>
         </div>
         
-        <div class="meta-materia">{{ meta.materiaNome }}</div>
+        <div class="meta-materia">{{ meta.materiaNome || 'Sem matéria específica' }}</div>
         
         <div class="meta-descricao" *ngIf="meta.descricao">
           {{ meta.descricao }}
@@ -144,12 +312,18 @@
       </div>
     </div>
     
-    <!-- Lista de anotações do dia -->
-    <div class="anotacoes-lista" *ngIf="detalheDia.anotacoes && detalheDia.anotacoes.length > 0">
+    <!-- Lista de anotações do dia (aquelas que não estão vinculadas a sessões) -->
+    <div class="anotacoes-lista" *ngIf="getAnotacoesFiltered().length > 0">
       <h5>Anotações do Dia</h5>
       
-      <div class="anotacao-item" *ngFor="let anotacao of detalheDia.anotacoes">
+      <div class="anotacao-item" *ngFor="let anotacao of getAnotacoesFiltered()">
         <div class="anotacao-cabecalho">
+          <div class="anotacao-categoria" *ngIf="anotacao.categoriaMateria" [style.color]="getCorCategoria(anotacao.categoriaMateria)">
+            {{ anotacao.categoriaMateria }}
+          </div>
+          <div class="anotacao-materia" *ngIf="anotacao.materiaNome && anotacao.materiaNome !== 'Sem matéria'">
+            {{ anotacao.materiaNome }}
+          </div>
           <div class="anotacao-titulo" *ngIf="anotacao.titulo">{{ anotacao.titulo }}</div>
           <div class="anotacao-data">{{ anotacao.dataCriacao | date:'HH:mm' }}</div>
         </div>
@@ -163,8 +337,9 @@
     </div>
     
     <!-- Mensagem quando não há dados para exibir -->
-    <div class="sem-dados" *ngIf="detalheDia.sessoes.length === 0 && detalheDia.metas.length === 0 && (!detalheDia.anotacoes || detalheDia.anotacoes.length === 0)">
+    <div class="sem-dados" *ngIf="semDadosParaExibir()">
       <p>Não há sessões de estudo, metas ou anotações registradas para este dia.</p>
+      <p *ngIf="filtroCategoria || filtroMateria || filtroTopico">Tente remover os filtros para ver todos os dados.</p>
     </div>
   </div>
 </div>

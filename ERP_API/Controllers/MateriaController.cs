@@ -88,6 +88,38 @@ namespace ERP_API.Controllers
             }
         }
 
+        [HttpGet("categoria/{categoriaId}")]
+        public async Task<IActionResult> GetByCategoria(int categoriaId)
+        {
+            try
+            {
+                var usuarioId = GetUsuarioIdFromToken();
+                if (usuarioId == null)
+                {
+                    return Unauthorized(new { message = "Usuário não identificado" });
+                }
+
+                var materias = await _materiaService.GetByCategoriaIdAsync(categoriaId, usuarioId.Value);
+
+                var response = materias.Select(m => new MateriaResponseDto
+                {
+                    Id = m.Id,
+                    UsuarioId = m.UsuarioId,
+                    Nome = m.Nome,
+                    Cor = m.Cor,
+                    CriadoEm = m.CriadoEm,
+                    AtualizadoEm = m.AtualizadoEm
+                });
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter matérias da categoria {CategoriaId}", categoriaId);
+                return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] MateriaRequestDto dto)
         {

@@ -4,6 +4,7 @@ export interface SessaoEstudo {
     id: number;
     materiaId: number;
     materiaNome: string;
+    categoriaId?: number;
     topicoId?: number;
     topicoNome?: string;
     dataInicio: Date;
@@ -19,4 +20,13 @@ export interface SessaoEstudo {
     dataInicio: Date;
     dataFim?: Date;
     duracao?: number; // em minutos
+  }
+
+  export interface SessaoDashboardStatsDto {
+    tempoTotalEstudado: string; 
+    diasEstudados: number;
+    totalDias: number;
+    percentualDiasEstudados: number;
+    materiaMaisEstudada: string;
+    horasMateriaMaisEstudada: number;
   }

@@ -29,7 +29,6 @@ namespace ERP_API.Repositorys
             _sqlLoader = sqlLoader;
         }
 
-        // Método auxiliar para converter o StatusSessao para o formato esperado pelo banco
         private string ConvertStatusToDbValue(StatusSessao status)
         {
             return status switch
@@ -144,7 +143,6 @@ namespace ERP_API.Repositorys
         {
             try
             {
-                // Obter estatísticas gerais
                 string query = await _sqlLoader.LoadSqlAsync("SessoesEstudo/GetDashboardStats.sql");
 
                 var parameters = new MySqlParameter[]
@@ -177,7 +175,6 @@ namespace ERP_API.Repositorys
                     stats.TotalDias = Convert.ToInt32(row["total_dias"]);
                 }
 
-                // Obter matéria mais estudada
                 string materiaQuery = await _sqlLoader.LoadSqlAsync("SessoesEstudo/GetMateriaMaisEstudada.sql");
                 var materiaTable = await _databaseService.ExecuteQueryAsync(materiaQuery, parameters);
 
@@ -213,6 +210,7 @@ namespace ERP_API.Repositorys
                 {
                     new MySqlParameter("@usuarioId", sessao.UsuarioId),
                     new MySqlParameter("@materiaId", sessao.MateriaId),
+                    new MySqlParameter("@categoriaId", sessao.CategoriaId),
                     new MySqlParameter("@topicoId", sessao.TopicoId.HasValue ? (object)sessao.TopicoId.Value : DBNull.Value),
                     new MySqlParameter("@status", ConvertStatusToDbValue(sessao.Status))
                 };
@@ -220,7 +218,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 sessao.Id = Convert.ToInt32(id);
 
-                // Buscar a sessão completa para obter as datas geradas pelo banco
                 var createdSessao = await GetByIdAsync(sessao.Id, sessao.UsuarioId);
                 if (createdSessao != null)
                 {
@@ -246,7 +243,6 @@ namespace ERP_API.Repositorys
         {
             try
             {
-                // Primeiro finaliza qualquer pausa ativa
                 string pausaQuery = await _sqlLoader.LoadSqlAsync("SessoesEstudo/FinalizarPausasAtivas.sql");
                 var pausaParameters = new MySqlParameter[]
                 {
@@ -288,7 +284,6 @@ namespace ERP_API.Repositorys
             {
                 pausa.Inicio = DateTime.Now;
 
-                // Atualiza status da sessão para pausada
                 string statusQuery = await _sqlLoader.LoadSqlAsync("SessoesEstudo/UpdateStatus.sql");
                 var statusParameters = new MySqlParameter[]
                 {
@@ -299,8 +294,6 @@ namespace ERP_API.Repositorys
 
                 await _databaseService.ExecuteNonQueryAsync(statusQuery, statusParameters);
 
-
-                // Cria a pausa
                 string query = await _sqlLoader.LoadSqlAsync("SessoesEstudo/CreatePausa.sql");
                 var parameters = new MySqlParameter[]
                 {
@@ -311,7 +304,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 pausa.Id = Convert.ToInt32(id);
 
-                // Buscar dados completos da pausa
                 string selectQuery = await _sqlLoader.LoadSqlAsync("SessoesEstudo/GetPausaById.sql");
                 var selectParameters = new MySqlParameter[]
                 {
@@ -342,7 +334,6 @@ namespace ERP_API.Repositorys
         {
             try
             {
-                // Finaliza a pausa
                 string query = await _sqlLoader.LoadSqlAsync("SessoesEstudo/FinalizarPausa.sql");
                 var parameters = new MySqlParameter[]
                 {
@@ -358,7 +349,6 @@ namespace ERP_API.Repositorys
                     return false;
                 }
 
-                // Obtém o ID da sessão associada à pausa
                 string getPausaQuery = await _sqlLoader.LoadSqlAsync("SessoesEstudo/GetPausaById.sql");
                 var getPausaParams = new MySqlParameter[]
                 {
@@ -373,7 +363,6 @@ namespace ERP_API.Repositorys
 
                 int sessaoId = Convert.ToInt32(dataTable.Rows[0]["sessao_id"]);
 
-                // Atualiza status da sessão para "em andamento"
                 string statusQuery = await _sqlLoader.LoadSqlAsync("SessoesEstudo/UpdateStatus.sql");
                 var statusParameters = new MySqlParameter[]
                 {
@@ -421,7 +410,11 @@ namespace ERP_API.Repositorys
                 Id = Convert.ToInt32(row["id"]),
                 UsuarioId = Convert.ToInt32(row["usuario_id"]),
                 MateriaId = Convert.ToInt32(row["materia_id"]),
+                NomeMateria = row["nome_materia"]?.ToString(),
                 TopicoId = row["topico_id"] != DBNull.Value ? Convert.ToInt32(row["topico_id"]) : null,
+                NomeTopico = row["nome_topico"]?.ToString(),
+                CategoriaId = row["categoria_id"] != DBNull.Value ? Convert.ToInt32(row["categoria_id"]) : null,
+                NomeCategoria = row["nome_categoria"]?.ToString(),
                 DataInicio = Convert.ToDateTime(row["data_inicio"]),
                 DataFim = row["data_fim"] != DBNull.Value ? Convert.ToDateTime(row["data_fim"]) : null,
                 Status = ConvertDbValueToStatus(row["status"].ToString() ?? "em_andamento"),
@@ -435,7 +428,6 @@ namespace ERP_API.Repositorys
             return sessao;
         }
 
-        // Método auxiliar para converter o valor do banco para o enum StatusSessao
         private StatusSessao ConvertDbValueToStatus(string dbValue)
         {
             return dbValue.ToLower() switch
@@ -443,7 +435,7 @@ namespace ERP_API.Repositorys
                 "em_andamento" => StatusSessao.EmAndamento,
                 "pausada" => StatusSessao.Pausada,
                 "concluida" => StatusSessao.Concluida,
-                _ => StatusSessao.EmAndamento // Valor padrão
+                _ => StatusSessao.EmAndamento 
             };
         }
     }

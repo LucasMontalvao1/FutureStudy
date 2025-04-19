@@ -53,17 +53,13 @@ namespace ERP_API.Services
             // Se a data final não for fornecida, use a data atual
             dataFim ??= DateTime.Now;
 
-            // Obter as metas do repositório
             var metas = await _metaRepository.GetByDateRangeAsync(usuarioId, dataInicio, dataFim.Value);
 
-            // Converter para DTOs
             var metaDtos = new List<MetaResponseDto>();
             foreach (var meta in metas)
             {
-                // Adicionar informações adicionais se necessário (como nome da matéria, tópico, etc.)
                 var metaDto = _mapper.Map<MetaResponseDto>(meta);
 
-                // Se você precisar carregar informações relacionadas:
                 if (meta.MateriaId.HasValue)
                 {
                     var materia = await _materiaRepository.GetByIdAsync(meta.MateriaId.Value);
@@ -82,7 +78,6 @@ namespace ERP_API.Services
                     }
                 }
 
-                // Calcular progresso percentual
                 if (meta.QuantidadeTotal > 0)
                 {
                     metaDto.PercentualConcluido = ((decimal)meta.QuantidadeAtual * 100) / meta.QuantidadeTotal;
@@ -99,7 +94,6 @@ namespace ERP_API.Services
 
         public async Task<IEnumerable<MetaResponseDto>> GetAllByMateriaIdAsync(int materiaId, int usuarioId)
         {
-            // Verifica se a matéria pertence ao usuário
             var materiaExists = await _materiaRepository.BelongsToUsuarioAsync(materiaId, usuarioId);
             if (!materiaExists)
             {
@@ -113,7 +107,6 @@ namespace ERP_API.Services
 
         public async Task<IEnumerable<MetaResponseDto>> GetAllByTopicoIdAsync(int topicoId, int usuarioId)
         {
-            // Verifica se o tópico pertence ao usuário
             var topicoExists = await _topicoRepository.BelongsToUsuarioAsync(topicoId, usuarioId);
             if (!topicoExists)
             {
@@ -138,23 +131,19 @@ namespace ERP_API.Services
 
         public async Task<MetaResponseDto> CreateAsync(MetaRequestDto dto, int usuarioId)
         {
-            // Validar o DTO usando FluentValidation
             var validationResult = await _metaRequestValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
                 throw new FluentValidation.ValidationException(validationResult.Errors);
             }
 
-            // Validações relacionadas a entidades
             await ValidateRelatedEntities(dto, usuarioId);
 
-            // Mapear para a entidade
             var meta = _mapper.Map<Meta>(dto);
             meta.UsuarioId = usuarioId;
-            meta.QuantidadeAtual = 0; // Sempre inicia com zero
-            meta.Concluida = false;   // Sempre inicia como não concluída
+            meta.QuantidadeAtual = 0; 
+            meta.Concluida = false;   
 
-            // Criar no repositório
             var createdMeta = await _metaRepository.CreateAsync(meta);
 
             return _mapper.Map<MetaResponseDto>(createdMeta);
@@ -162,33 +151,27 @@ namespace ERP_API.Services
 
         public async Task<MetaResponseDto?> UpdateAsync(int id, MetaUpdateRequestDto dto, int usuarioId)
         {
-            // Verifica se a meta existe e pertence ao usuário
             var meta = await _metaRepository.GetByIdAsync(id);
             if (meta == null || meta.UsuarioId != usuarioId)
             {
                 return null;
             }
 
-            // Validações relacionadas a entidades
             await ValidateRelatedEntitiesForUpdate(dto, meta, usuarioId);
 
-            // Atualizar os campos da entidade com os valores do DTO
             _mapper.Map(dto, meta);
 
-            // Se a quantidade atual atingir ou ultrapassar a meta, marca como concluída
             if (meta.QuantidadeAtual >= meta.QuantidadeTotal)
             {
                 meta.Concluida = true;
             }
 
-            // Validar a entidade após as alterações
             var validationResult = await _metaValidator.ValidateAsync(meta);
             if (!validationResult.IsValid)
             {
                 throw new FluentValidation.ValidationException(validationResult.Errors);
             }
 
-            // Atualizar no repositório
             var success = await _metaRepository.UpdateAsync(meta);
             if (!success)
             {
@@ -200,48 +183,41 @@ namespace ERP_API.Services
 
         public async Task<MetaResponseDto?> UpdateProgressoAsync(int id, int quantidade, int usuarioId)
         {
-            // Verifica se a meta existe e pertence ao usuário
             var meta = await _metaRepository.GetByIdAsync(id);
             if (meta == null || meta.UsuarioId != usuarioId)
             {
                 return null;
             }
 
-            // Calcula a nova quantidade atual
             int novaQuantidade = meta.QuantidadeAtual + quantidade;
             if (novaQuantidade < 0)
             {
-                novaQuantidade = 0; // Não permite valores negativos
+                novaQuantidade = 0; 
             }
 
-            // Atualiza o progresso no banco de dados
             var success = await _metaRepository.UpdateProgressoAsync(id, novaQuantidade);
             if (!success)
             {
                 return null;
             }
 
-            // Busca a meta atualizada
             var metaAtualizada = await _metaRepository.GetByIdAsync(id);
             return _mapper.Map<MetaResponseDto>(metaAtualizada);
         }
 
         public async Task<bool> CompleteAsync(int id, int usuarioId)
         {
-            // Verifica se a meta existe e pertence ao usuário
             var meta = await _metaRepository.GetByIdAsync(id);
             if (meta == null || meta.UsuarioId != usuarioId)
             {
                 return false;
             }
 
-            // Se já estiver concluída, não faz nada
             if (meta.Concluida)
             {
                 return true;
             }
 
-            // Marca como concluída e atualiza a quantidade para o total
             meta.Concluida = true;
             meta.QuantidadeAtual = meta.QuantidadeTotal;
 
@@ -256,7 +232,6 @@ namespace ERP_API.Services
 
         public async Task<bool> DeleteAsync(int id, int usuarioId)
         {
-            // Verifica se a meta existe e pertence ao usuário
             var belongs = await _metaRepository.BelongsToUsuarioAsync(id, usuarioId);
             if (!belongs)
             {
@@ -270,7 +245,6 @@ namespace ERP_API.Services
 
         private async Task ValidateRelatedEntities(MetaRequestDto dto, int usuarioId)
         {
-            // Valida a matéria se fornecida
             if (dto.MateriaId.HasValue)
             {
                 var materiaExists = await _materiaRepository.BelongsToUsuarioAsync(dto.MateriaId.Value, usuarioId);
@@ -280,7 +254,6 @@ namespace ERP_API.Services
                 }
             }
 
-            // Valida o tópico se fornecido
             if (dto.TopicoId.HasValue)
             {
                 var topicoExists = await _topicoRepository.BelongsToUsuarioAsync(dto.TopicoId.Value, usuarioId);
@@ -289,7 +262,6 @@ namespace ERP_API.Services
                     throw new InvalidOperationException("O tópico especificado não foi encontrado ou não pertence ao usuário");
                 }
 
-                // Se tiver tópico, a matéria deve ser a do tópico
                 var topico = await _topicoRepository.GetByIdAsync(dto.TopicoId.Value);
                 if (topico != null && dto.MateriaId.HasValue && topico.MateriaId != dto.MateriaId.Value)
                 {
@@ -297,13 +269,11 @@ namespace ERP_API.Services
                 }
             }
 
-            // Validações específicas por tipo de meta
             ValidateTipoMeta(dto);
         }
 
         private async Task ValidateRelatedEntitiesForUpdate(MetaUpdateRequestDto dto, Meta meta, int usuarioId)
         {
-            // Valida a matéria se for alterada
             if (dto.MateriaId.HasValue && dto.MateriaId.Value != meta.MateriaId)
             {
                 var materiaExists = await _materiaRepository.BelongsToUsuarioAsync(dto.MateriaId.Value, usuarioId);
@@ -314,7 +284,6 @@ namespace ERP_API.Services
                 meta.MateriaId = dto.MateriaId.Value;
             }
 
-            // Valida o tópico se for alterado
             if (dto.TopicoId.HasValue && dto.TopicoId.Value != meta.TopicoId)
             {
                 var topicoExists = await _topicoRepository.BelongsToUsuarioAsync(dto.TopicoId.Value, usuarioId);
@@ -323,7 +292,6 @@ namespace ERP_API.Services
                     throw new InvalidOperationException("O tópico especificado não foi encontrado ou não pertence ao usuário");
                 }
 
-                // Se tiver tópico, a matéria deve ser a do tópico
                 var topico = await _topicoRepository.GetByIdAsync(dto.TopicoId.Value);
                 if (topico != null && meta.MateriaId.HasValue && topico.MateriaId != meta.MateriaId.Value)
                 {
@@ -335,7 +303,6 @@ namespace ERP_API.Services
 
         private void ValidateTipoMeta(MetaRequestDto dto)
         {
-            // Validações específicas por tipo de meta
             switch (dto.Tipo)
             {
                 case TipoMeta.Tempo:
@@ -364,7 +331,6 @@ namespace ERP_API.Services
                     break;
             }
 
-            // Validações de frequência
             if (dto.Frequencia.HasValue && dto.Frequencia.Value == FrequenciaMeta.Semanal && string.IsNullOrEmpty(dto.DiasSemana))
             {
                 throw new InvalidOperationException("Para metas com frequência semanal, os dias da semana são obrigatórios");

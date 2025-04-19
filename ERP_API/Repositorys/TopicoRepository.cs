@@ -161,7 +161,6 @@ namespace ERP_API.Repositorys
                     new MySqlParameter("@nome", nome)
                 };
 
-                // Se for uma atualização, ignore o próprio tópico na verificação de duplicidade
                 if (ignoreTopicoId.HasValue)
                 {
                     query += " AND id != @ignoreTopicoId";
@@ -197,7 +196,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 topico.Id = Convert.ToInt32(id);
 
-                // Buscar o tópico completo para obter as datas geradas pelo banco
                 var createdTopico = await GetByIdAsync(topico.Id);
                 if (createdTopico != null)
                 {

@@ -26,7 +26,6 @@ namespace ERP_API.Services
 
         public async Task<IEnumerable<HistoricoAnotacao>> GetByAnotacaoAsync(int anotacaoId, int usuarioId)
         {
-            // Verificar se a anotação existe e pertence ao usuário
             var anotacao = await _anotacaoRepository.GetByIdAsync(anotacaoId, usuarioId);
             if (anotacao == null)
             {
@@ -38,7 +37,6 @@ namespace ERP_API.Services
 
         public async Task<HistoricoAnotacao> RegistrarAlteracaoAsync(int anotacaoId, int usuarioId, string conteudoAnterior)
         {
-            // Verificar se a anotação existe e pertence ao usuário
             var anotacao = await _anotacaoRepository.GetByIdAsync(anotacaoId, usuarioId);
             if (anotacao == null)
             {

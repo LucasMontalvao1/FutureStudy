@@ -8,13 +8,9 @@ namespace ERP_API.Validators
     {
         public SessaoEstudoRequestDtoValidator()
         {
-            RuleFor(x => x.MateriaId)
-                .NotEmpty().WithMessage("A matéria é obrigatória")
-                .GreaterThan(0).WithMessage("ID da matéria inválido");
-
-            RuleFor(x => x.TopicoId)
-                .GreaterThan(0).WithMessage("ID do tópico inválido")
-                .When(x => x.TopicoId.HasValue);
+            RuleFor(x => x.CategoriaId).GreaterThan(0).WithMessage("A categoria é obrigatória");
+            RuleFor(x => x.MateriaId).GreaterThan(0).WithMessage("A matéria é obrigatória");
+            RuleFor(x => x.TopicoId).GreaterThan(0).WithMessage("O tópico é obrigatório");
         }
     }
 

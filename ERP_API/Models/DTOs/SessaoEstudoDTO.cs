@@ -6,10 +6,14 @@ namespace ERP_API.Models.DTOs
 {
     public class SessaoEstudoRequestDto
     {
+        [Required(ErrorMessage = "A categoria é obrigatória")]
+        public int CategoriaId { get; set; }
+
         [Required(ErrorMessage = "A matéria é obrigatória")]
         public int MateriaId { get; set; }
 
-        public int? TopicoId { get; set; }
+        [Required(ErrorMessage = "O tópico é obrigatório")]
+        public int TopicoId { get; set; }
     }
 
     public class SessaoEstudoResponseDto
@@ -18,6 +22,8 @@ namespace ERP_API.Models.DTOs
         public int UsuarioId { get; set; }
         public int MateriaId { get; set; }
         public int? TopicoId { get; set; }
+        public int? CategoriaId { get; set; }         
+        public string? NomeCategoria { get; set; }
         public DateTime DataInicio { get; set; }
         public DateTime? DataFim { get; set; }
         public StatusSessao Status { get; set; }

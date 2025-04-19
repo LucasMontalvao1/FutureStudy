@@ -27,7 +27,6 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Obtendo todas as categorias do usuário {UsuarioId}", usuarioId);
 
-                // Verificar se o usuário existe
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
                     _logger.LogWarning("Usuário {UsuarioId} não encontrado ao obter categorias", usuarioId);
@@ -57,7 +56,6 @@ namespace ERP_API.Services
                     return null;
                 }
 
-                // Verificar se a categoria pertence ao usuário
                 if (categoria.UsuarioId != usuarioId)
                 {
                     _logger.LogWarning("Categoria {Id} não pertence ao usuário {UsuarioId}", id, usuarioId);
@@ -79,13 +77,11 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Criando categoria {Nome} para o usuário {UsuarioId}", dto.Nome, usuarioId);
 
-                // Verificar se o usuário existe
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
                     throw new InvalidOperationException($"Usuário {usuarioId} não encontrado");
                 }
 
-                // Verificar se já existe uma categoria com o mesmo nome para este usuário
                 if (await _categoriaRepository.ExistsByNomeAndUsuarioIdAsync(dto.Nome, usuarioId))
                 {
                     throw new InvalidOperationException($"Já existe uma categoria com o nome '{dto.Nome}' para este usuário");
@@ -113,17 +109,14 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Atualizando categoria {Id} para o usuário {UsuarioId}", id, usuarioId);
 
-                // Verificar se a categoria existe e pertence ao usuário
                 var categoria = await GetByIdAsync(id, usuarioId);
                 if (categoria == null)
                 {
                     return null;
                 }
 
-                // Atualizar apenas os campos que foram fornecidos
                 if (!string.IsNullOrEmpty(dto.Nome))
                 {
-                    // Verificar se já existe outra categoria com o mesmo nome para este usuário
                     if (await _categoriaRepository.ExistsByNomeAndUsuarioIdAsync(dto.Nome, usuarioId, id))
                     {
                         throw new InvalidOperationException($"Já existe outra categoria com o nome '{dto.Nome}' para este usuário");
@@ -137,7 +130,6 @@ namespace ERP_API.Services
                     categoria.Cor = dto.Cor;
                 }
 
-                // Se nenhum campo foi alterado, retornar a categoria sem fazer a atualização
                 if (string.IsNullOrEmpty(dto.Nome) && string.IsNullOrEmpty(dto.Cor))
                 {
                     _logger.LogInformation("Nenhum campo para atualizar na categoria {Id}", id);
@@ -151,7 +143,6 @@ namespace ERP_API.Services
                     return null;
                 }
 
-                // Retornar a categoria atualizada (buscar novamente para ter as datas atualizadas)
                 return await _categoriaRepository.GetByIdAsync(id);
             }
             catch (Exception ex)
@@ -167,7 +158,6 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Excluindo categoria {Id} para o usuário {UsuarioId}", id, usuarioId);
 
-                // Verificar se a categoria existe e pertence ao usuário
                 if (!await _categoriaRepository.BelongsToUsuarioAsync(id, usuarioId))
                 {
                     _logger.LogWarning("Categoria {Id} não encontrada ou não pertence ao usuário {UsuarioId}", id, usuarioId);

@@ -1,5 +1,6 @@
 ﻿using ERP_API.Models;
 using ERP_API.Models.DTOs;
+using ERP_API.Repositorys;
 using ERP_API.Repositorys.Interfaces;
 using ERP_API.Services.Interfaces;
 
@@ -8,15 +9,18 @@ namespace ERP_API.Services
     public class MateriaService : IMateriaService
     {
         private readonly IMateriaRepository _materiaRepository;
+        private readonly ICategoriaRepository _categoriaRepository;
         private readonly IAuthRepository _authRepository;
         private readonly ILogger<MateriaService> _logger;
 
         public MateriaService(
             IMateriaRepository materiaRepository,
+            ICategoriaRepository categoriaRepository,
             IAuthRepository authRepository,
             ILogger<MateriaService> logger)
         {
             _materiaRepository = materiaRepository;
+            _categoriaRepository = categoriaRepository;
             _authRepository = authRepository;
             _logger = logger;
         }
@@ -27,7 +31,6 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Obtendo todas as matérias do usuário {UsuarioId}", usuarioId);
 
-                // Verificar se o usuário existe
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
                     _logger.LogWarning("Usuário {UsuarioId} não encontrado ao obter matérias", usuarioId);
@@ -57,7 +60,6 @@ namespace ERP_API.Services
                     return null;
                 }
 
-                // Verificar se a matéria pertence ao usuário
                 if (materia.UsuarioId != usuarioId)
                 {
                     _logger.LogWarning("Matéria {Id} não pertence ao usuário {UsuarioId}", id, usuarioId);
@@ -79,13 +81,11 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Criando matéria {Nome} para o usuário {UsuarioId}", dto.Nome, usuarioId);
 
-                // Verificar se o usuário existe
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
                     throw new InvalidOperationException($"Usuário {usuarioId} não encontrado");
                 }
 
-                // Verificar se já existe uma matéria com o mesmo nome para este usuário
                 if (await _materiaRepository.ExistsByNomeAndUsuarioIdAsync(dto.Nome, usuarioId))
                 {
                     throw new InvalidOperationException($"Já existe uma matéria com o nome '{dto.Nome}' para este usuário");
@@ -107,23 +107,50 @@ namespace ERP_API.Services
             }
         }
 
+        public async Task<IEnumerable<Materia>> GetByCategoriaIdAsync(int categoriaId, int usuarioId)
+        {
+            try
+            {
+                _logger.LogInformation("Obtendo matérias da categoria {CategoriaId} para o usuário {UsuarioId}",
+                    categoriaId, usuarioId);
+
+                if (!await _authRepository.UsuarioExiste(usuarioId))
+                {
+                    _logger.LogWarning("Usuário {UsuarioId} não encontrado ao obter matérias por categoria", usuarioId);
+                    return Enumerable.Empty<Materia>();
+                }
+
+                if (!await _categoriaRepository.BelongsToUsuarioAsync(categoriaId, usuarioId))
+                {
+                    _logger.LogWarning("Categoria {CategoriaId} não encontrada ou não pertence ao usuário {UsuarioId}", 
+                        categoriaId, usuarioId);
+                    return Enumerable.Empty<Materia>();
+                }
+
+                return await _materiaRepository.GetByCategoriaIdAsync(categoriaId, usuarioId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao obter matérias da categoria {CategoriaId} para o usuário {UsuarioId}",
+                    categoriaId, usuarioId);
+                throw;
+            }
+        }
+
         public async Task<Materia?> UpdateAsync(int id, MateriaUpdateRequestDto dto, int usuarioId)
         {
             try
             {
                 _logger.LogInformation("Atualizando matéria {Id} para o usuário {UsuarioId}", id, usuarioId);
 
-                // Verificar se a matéria existe e pertence ao usuário
                 var materia = await GetByIdAsync(id, usuarioId);
                 if (materia == null)
                 {
                     return null;
                 }
 
-                // Atualizar apenas os campos que foram fornecidos
                 if (!string.IsNullOrEmpty(dto.Nome))
                 {
-                    // Verificar se já existe outra matéria com o mesmo nome para este usuário
                     if (await _materiaRepository.ExistsByNomeAndUsuarioIdAsync(dto.Nome, usuarioId, id))
                     {
                         throw new InvalidOperationException($"Já existe outra matéria com o nome '{dto.Nome}' para este usuário");
@@ -137,7 +164,6 @@ namespace ERP_API.Services
                     materia.Cor = dto.Cor;
                 }
 
-                // Se nenhum campo foi alterado, retornar a matéria sem fazer a atualização
                 if (string.IsNullOrEmpty(dto.Nome) && string.IsNullOrEmpty(dto.Cor))
                 {
                     _logger.LogInformation("Nenhum campo para atualizar na matéria {Id}", id);
@@ -151,7 +177,6 @@ namespace ERP_API.Services
                     return null;
                 }
 
-                // Retornar a matéria atualizada (buscar novamente para ter as datas atualizadas)
                 return await _materiaRepository.GetByIdAsync(id);
             }
             catch (Exception ex)
@@ -167,7 +192,6 @@ namespace ERP_API.Services
             {
                 _logger.LogInformation("Excluindo matéria {Id} para o usuário {UsuarioId}", id, usuarioId);
 
-                // Verificar se a matéria existe e pertence ao usuário
                 if (!await _materiaRepository.BelongsToUsuarioAsync(id, usuarioId))
                 {
                     _logger.LogWarning("Matéria {Id} não encontrada ou não pertence ao usuário {UsuarioId}", id, usuarioId);

@@ -1,4 +1,4 @@
-const apiUrl = 'https://localhost:7281/api/v1';
+const apiUrl = 'https://localhost:7281/api/v1'; 
 
 export const environment = {
   production: false,
@@ -8,8 +8,8 @@ export const environment = {
     sessaoestudo: `${apiUrl}/SessoesEstudo`,
     metas: `${apiUrl}/metas`,
     anotacoes: `${apiUrl}/anotacoes`,
+    materias: `${apiUrl}/materias`, 
+    categorias: `${apiUrl}/categorias`, 
+    topicos: `${apiUrl}/topicos`
   },
 };
-
-
-

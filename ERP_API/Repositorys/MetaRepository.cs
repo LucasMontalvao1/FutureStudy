@@ -238,7 +238,6 @@ namespace ERP_API.Repositorys
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 meta.Id = Convert.ToInt32(id);
 
-                // Buscar a meta completa para obter as datas geradas pelo banco
                 var createdMeta = await GetByIdAsync(meta.Id);
                 if (createdMeta != null)
                 {

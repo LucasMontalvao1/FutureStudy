@@ -247,42 +247,363 @@
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--primary-color, #4263eb);
+      margin-bottom: 0.5rem;
+    }
+    
+    .tendencia-estudo {
+      font-size: 0.75rem;
+      
+      .tendencia-subindo {
+        color: var(--success-color, #099268);
+      }
+      
+      .tendencia-estavel {
+        color: var(--text-secondary, #6c757d);
+      }
+      
+      .tendencia-descendo {
+        color: var(--danger-color, #e03131);
+      }
     }
   }
 }
 
-.sessoes-lista, .metas-lista {
-  .sessao-item, .meta-item {
+// Novos estilos para os filtros e visualizações
+.filtros-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  
+  .filtros-titulo {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .filtros-botoes {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    
+    .btn-filtro {
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--border-radius-md, 0.25rem);
+      background-color: var(--surface-card, #f8f9fa);
+      border: 1px solid var(--border-color, #e9ecef);
+      font-size: 0.875rem;
+      color: var(--text-secondary, #6c757d);
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        background-color: var(--surface-hover, #f1f3f5);
+      }
+      
+      &.ativo {
+        background-color: var(--primary-light, #edf2ff);
+        border-color: var(--primary-color, #4263eb);
+        color: var(--primary-color, #4263eb);
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.distribuicao-tempo {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--surface-card, #f8f9fa);
+  border-radius: var(--border-radius-md, 0.25rem);
+  
+  .grafico-barras {
+    .barra-item {
+      margin-bottom: 1rem;
+      
+      .barra-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+        
+        .barra-label {
+          font-weight: 500;
+          font-size: 0.875rem;
+        }
+        
+        .barra-valor {
+          font-size: 0.875rem;
+          color: var(--text-secondary, #6c757d);
+        }
+      }
+      
+      .barra-container {
+        height: 0.5rem;
+        background-color: var(--border-color, #e9ecef);
+        border-radius: 1rem;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+        
+        .barra-progresso {
+          height: 100%;
+          background-color: var(--primary-color, #4263eb);
+          border-radius: 1rem;
+        }
+      }
+      
+      .btn-pequeno {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        background-color: transparent;
+        border: 1px solid var(--border-color, #e9ecef);
+        border-radius: var(--border-radius-sm, 0.125rem);
+        color: var(--text-secondary, #6c757d);
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background-color: var(--surface-hover, #f1f3f5);
+          color: var(--primary-color, #4263eb);
+          border-color: var(--primary-color, #4263eb);
+        }
+      }
+    }
+  }
+}
+
+.seletor-filtros {
+  margin-bottom: 1.5rem;
+  
+  .filtro-atual {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--surface-card, #f8f9fa);
+    border-radius: var(--border-radius-md, 0.25rem);
+    margin-bottom: 1rem;
+    
+    strong {
+      color: var(--primary-color, #4263eb);
+    }
+    
+    .btn-limpar-filtro {
+      padding: 0.25rem 0.5rem;
+      border: none;
+      background-color: transparent;
+      color: var(--text-secondary, #6c757d);
+      font-size: 0.875rem;
+      cursor: pointer;
+      
+      &:hover {
+        color: var(--danger-color, #e03131);
+      }
+    }
+  }
+  
+  .filtro-opcoes {
+    .opcoes-lista {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+      
+      .opcao-item {
+        padding: 0.75rem;
+        background-color: var(--surface-card, #f8f9fa);
+        border-radius: var(--border-radius-md, 0.25rem);
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid var(--border-color, #e9ecef);
+        position: relative;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--box-shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
+          border-color: var(--primary-color, #4263eb);
+        }
+        
+        .opcao-cor {
+          width: 0.75rem;
+          height: 0.75rem;
+          border-radius: 50%;
+          position: absolute;
+          top: 0.75rem;
+          right: 0.75rem;
+        }
+        
+        .opcao-nome {
+          font-weight: 500;
+          margin-bottom: 0.25rem;
+        }
+        
+        .opcao-subtitulo {
+          font-size: 0.75rem;
+          color: var(--text-secondary, #6c757d);
+          margin-bottom: 0.5rem;
+        }
+        
+        .opcao-tempo {
+          font-size: 0.75rem;
+          color: var(--primary-color, #4263eb);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+// Estilos melhorados para as sessões de estudo
+.sessoes-lista {
+  margin-bottom: 1.5rem;
+  
+  .sessao-item {
+    margin-bottom: 1rem;
+    background-color: var(--surface-card, #f8f9fa);
+    border-radius: var(--border-radius-md, 0.25rem);
+    border-left: 4px solid var(--primary-color, #4263eb);
+    overflow: hidden;
+  }
+
+  .sessao-cabecalho {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+    
+    &:hover {
+      background-color: var(--surface-hover, #f1f3f5);
+    }
+    
+    .sessao-categoria {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 1rem;
+      min-width: 6rem;
+    }
+    
+    .sessao-materia {
+      font-weight: 600;
+      color: var(--text-primary, #333);
+      margin-right: 0.75rem;
+      flex: 1;
+    }
+    
+    .sessao-topico {
+      font-size: 0.875rem;
+      color: var(--text-secondary, #666);
+      margin-right: 0.75rem;
+    }
+    
+    .sessao-tempo {
+      font-weight: 500;
+      color: var(--primary-color, #4263eb);
+      margin-right: 0.75rem;
+    }
+    
+    .sessao-toggle {
+      font-size: 0.875rem;
+      color: var(--text-secondary, #6c757d);
+    }
+  }
+  
+  .sessao-detalhes {
+    padding: 0 1rem 1rem 1rem;
+    background-color: var(--surface-background, #fff);
+    animation: fadeIn 0.3s ease;
+    
+    .sessao-horario {
+      font-size: 0.875rem;
+      color: var(--text-secondary, #666);
+      margin-bottom: 0.75rem;
+    }
+    
+    .sessao-status {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 1rem;
+      background-color: var(--primary-light, #edf2ff);
+      color: var(--primary-color, #4263eb);
+      margin-bottom: 0.75rem;
+      
+      &.emandamento {
+        background-color: var(--primary-light, #edf2ff);
+        color: var(--primary-color, #4263eb);
+      }
+      
+      &.pausada {
+        background-color: var(--warning-light, #fff9db);
+        color: var(--warning-color, #f59f00);
+      }
+      
+      &.finalizada {
+        background-color: var(--success-light, #e6f7ef);
+        color: var(--success-color, #099268);
+      }
+    }
+  }
+
+  .sessao-anotacoes {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--border-color, #e9ecef);
+    
+    .anotacao-item {
+      padding: 0.75rem;
+      background-color: white;
+      border-radius: var(--border-radius-sm, 0.125rem);
+      border-left: 2px solid var(--border-color, #e9ecef);
+      margin-bottom: 0.5rem;
+      
+      .anotacao-conteudo {
+        font-size: 0.875rem;
+        color: var(--text-secondary, #666);
+        white-space: pre-line;
+        margin-bottom: 0.25rem;
+      }
+      
+      .anotacao-data {
+        font-size: 0.75rem;
+        color: var(--text-tertiary, #adb5bd);
+        text-align: right;
+      }
+    }
+  }
+}
+
+// Estilos melhorados para as metas
+.metas-lista {
+  margin-bottom: 1.5rem;
+  
+  .meta-item {
     margin-bottom: 1rem;
     padding: 1rem;
     background-color: var(--surface-card, #f8f9fa);
     border-radius: var(--border-radius-md, 0.25rem);
-    border-left: 4px solid var(--primary-color, #4263eb);
+    border-left: 4px solid var(--warning-color, #f59f00);
   }
 
-  .sessao-cabecalho, .meta-cabecalho {
+  .meta-cabecalho {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     flex-wrap: wrap;
     gap: 0.5rem;
-
-    .sessao-materia, .meta-titulo {
+    
+    .meta-categoria {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    
+    .meta-titulo {
       font-weight: 600;
       color: var(--text-primary, #333);
+      flex: 1;
     }
-
-    .sessao-topico {
-      font-size: 0.875rem;
-      color: var(--text-secondary, #666);
-    }
-
-    .sessao-tempo {
-      font-weight: 500;
-      color: var(--primary-color, #4263eb);
-    }
-
+    
     .meta-status {
       font-size: 0.75rem;
       padding: 0.25rem 0.5rem;
@@ -296,38 +617,20 @@
       }
     }
   }
-
-  .sessao-horario, .meta-materia {
+  
+  .meta-materia {
     font-size: 0.875rem;
     color: var(--text-secondary, #666);
     margin-bottom: 0.5rem;
   }
-
-  .sessao-status {
-    display: inline-block;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 1rem;
-    background-color: var(--primary-light, #edf2ff);
-    color: var(--primary-color, #4263eb);
-    
-    &.pausada {
-      background-color: var(--warning-light, #fff9db);
-      color: var(--warning-color, #f59f00);
-    }
-    
-    &.finalizada {
-      background-color: var(--success-light, #e6f7ef);
-      color: var(--success-color, #099268);
-    }
-  }
-
+  
   .meta-descricao {
     font-size: 0.875rem;
     color: var(--text-secondary, #666);
     margin: 0.5rem 0;
+    white-space: pre-line;
   }
-
+  
   .meta-progresso {
     margin-top: 0.75rem;
     
@@ -340,7 +643,7 @@
       
       .barra-progresso {
         height: 100%;
-        background-color: var(--primary-color, #4263eb);
+        background-color: var(--warning-color, #f59f00);
         border-radius: 1rem;
       }
     }
@@ -352,34 +655,88 @@
       justify-content: space-between;
     }
   }
+}
 
-  .sessao-anotacoes {
-    margin-top: 1rem;
-    padding-top: 0.5rem;
-    border-top: 1px dashed var(--border-color, #e9ecef);
+// Estilos para as anotações do dia
+.anotacoes-lista {
+  margin-bottom: 1.5rem;
+  
+  .anotacao-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--surface-card, #f8f9fa);
+    border-radius: var(--border-radius-md, 0.25rem);
+    border-left: 4px solid var(--info-color, #4dabf7);
+  }
+  
+  .anotacao-cabecalho {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     
-    .anotacao-item {
-      padding: 0.5rem;
-      background-color: white;
-      border-radius: var(--border-radius-sm, 0.125rem);
-      border-left: 2px solid var(--border-color, #e9ecef);
-      margin-bottom: 0.5rem;
-      
-      .anotacao-conteudo {
-        font-size: 0.875rem;
-        color: var(--text-secondary, #666);
-        white-space: pre-line;
-      }
+    .anotacao-categoria {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    
+    .anotacao-materia {
+      font-size: 0.875rem;
+      color: var(--text-primary, #333);
+      margin-right: 0.5rem;
+      font-weight: 500;
+    }
+    
+    .anotacao-titulo {
+      font-weight: 600;
+      color: var(--text-primary, #333);
+      flex: 1;
+    }
+    
+    .anotacao-data {
+      font-size: 0.75rem;
+      color: var(--text-tertiary, #adb5bd);
+    }
+  }
+  
+  .anotacao-conteudo {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #666);
+    margin-bottom: 0.75rem;
+    white-space: pre-line;
+  }
+  
+  .anotacao-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 1rem;
+      background-color: var(--info-light, #e7f5ff);
+      color: var(--info-color, #4dabf7);
     }
   }
 }
 
+// Mensagem para quando não há dados
 .sem-dados {
   padding: 2rem;
   text-align: center;
   background-color: var(--surface-card, #f8f9fa);
   border-radius: var(--border-radius-md, 0.25rem);
   color: var(--text-secondary, #6c757d);
+  margin-bottom: 1.5rem;
+}
+
+// Animações
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 // Responsividade
@@ -403,55 +760,26 @@
       width: 100%;
     }
   }
-}
-
-/* Estilos para a lista de anotações */
-.anotacoes-lista {
-  margin-top: 20px;
-  border-top: 1px solid #eee;
-  padding-top: 15px;
-}
-
-.anotacao-item {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.anotacao-cabecalho {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.anotacao-titulo {
-  font-weight: bold;
-  color: #333;
-}
-
-.anotacao-data {
-  color: #777;
-  font-size: 0.9em;
-}
-
-.anotacao-conteudo {
-  margin-bottom: 8px;
-  white-space: pre-line;
-}
-
-.anotacao-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.anotacao-tags .tag {
-  background-color: #e1f5fe;
-  color: #0277bd;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.8em;
+  
+  .filtros-container {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .filtros-botoes {
+      width: 100%;
+    }
+  }
+  
+  .sessao-cabecalho {
+    flex-wrap: wrap;
+    
+    .sessao-categoria {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    .sessao-materia {
+      flex: initial;
+    }
+  }
 }

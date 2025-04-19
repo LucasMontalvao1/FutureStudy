@@ -1,27 +1,163 @@
-<div class="card">
-    <h3>Cronômetro de Estudos</h3>
-    
-    <div class="timer">{{tempo}}</div>
-    
-    <div class="detalhes-timer">
-      <div class="item-detalhe">
-        <span class="rotulo">Categoria:</span>
-        <span class="valor">{{categoria}}</span>
-      </div>
-      
-      <div class="item-detalhe">
-        <span class="rotulo">Matéria:</span>
-        <span class="valor">{{materia}}</span>
+<div class="cronometro-container">
+  <div class="card">
+    <h3 class="card-title">🕒 Cronômetro de Estudos</h3>
+
+    <div class="timer">{{ tempo }}</div>
+
+    <!-- CATEGORIA -->
+    <div class="form-group" *ngIf="!sessaoAtiva">
+      <label for="categoria">Categoria: <span class="campo-obrigatorio">*</span></label>
+      <select 
+        id="categoria"
+        class="form-control select-estudo"
+        aria-required="true"
+        [ngClass]="{'is-invalid': erro && !categoriaId}"
+        [disabled]="sessaoAtiva || carregando"
+        [(ngModel)]="categoriaId"
+        (ngModelChange)="selecionarCategoria($event)">
+        <option [ngValue]="null">Selecione uma categoria</option>
+        <option *ngFor="let cat of categorias" [ngValue]="cat.id">{{ cat.nome }}</option>
+      </select>
+      <div *ngIf="erro && !categoriaId" class="campo-erro">Selecione uma categoria</div>
+    </div>
+
+    <!-- MATÉRIA -->
+    <div class="form-group" *ngIf="!sessaoAtiva">
+      <label for="materia">Matéria: <span class="campo-obrigatorio">*</span></label>
+      <select 
+        id="materia"
+        class="form-control select-estudo"
+        aria-required="true"
+        [ngClass]="{'is-invalid': erro && categoriaId && !materiaId}"
+        [disabled]="sessaoAtiva || !categoriaId || carregando || materiasFiltradas.length === 0"
+        [(ngModel)]="materiaId"
+        (ngModelChange)="selecionarMateria($event)">
+        <option [ngValue]="null">Selecione uma matéria</option>
+        <option *ngFor="let mat of materiasFiltradas" [ngValue]="mat.id">{{ mat.nome }}</option>
+      </select>
+      <div *ngIf="categoriaId && materiasFiltradas.length === 0" class="form-hint">Não há matérias disponíveis para esta categoria</div>
+      <div *ngIf="erro && categoriaId && !materiaId" class="campo-erro">Selecione uma matéria</div>
+    </div>
+
+    <!-- TÓPICO -->
+    <div class="form-group" *ngIf="!sessaoAtiva">
+      <label for="topico">Tópico: <span class="campo-obrigatorio">*</span></label>
+      <select 
+        id="topico"
+        class="form-control select-estudo"
+        aria-required="true"
+        [ngClass]="{'is-invalid': erro && materiaId && !topicoId && topicosFiltrados.length > 0}"
+        [disabled]="sessaoAtiva || !materiaId || carregando || topicosFiltrados.length === 0"
+        [(ngModel)]="topicoId">
+        <option [ngValue]="null">{{ topicosFiltrados.length > 0 ? 'Selecione um tópico' : 'Nenhum tópico disponível' }}</option>
+        <option *ngFor="let top of topicosFiltrados" [ngValue]="top.id">{{ top.nome }}</option>
+      </select>
+      <div *ngIf="erro && materiaId && !topicoId && topicosFiltrados.length > 0" class="campo-erro">Selecione um tópico</div>
+    </div>
+
+    <!-- INFORMAÇÕES DA SESSÃO -->
+    <div class="info-sessao fade-in" *ngIf="sessaoAtiva">
+      <div class="categoria-materia">
+        <span class="categoria">{{ obterNomeCategoria(categoriaId) }}</span>
+        <span class="materia">{{ obterNomeMateria(materiaId) }}</span>
+        <span class="topico" *ngIf="topicoId">- {{ obterNomeTopico(topicoId) }}</span>
       </div>
     </div>
-    
+
+    <!-- BOTÕES -->
     <div class="controles-timer">
-      <button class="btn btn-primary" (click)="iniciar()">Iniciar</button>
-      <button class="btn btn-secondary" (click)="pausar()">Pausar</button>
-      <button class="btn btn-secondary" (click)="parar()">Parar</button>
+      <button 
+        class="btn btn-primary"
+        title="Iniciar o cronômetro"
+        (click)="iniciar()"
+        [disabled]="carregando || sessaoAtiva || !categoriaId || !materiaId || (!topicoId && topicosFiltrados.length > 0)">
+        ▶️ Iniciar
+      </button>
+
+      <button 
+        class="btn"
+        title="Pausar ou retomar a sessão"
+        [ngClass]="{'btn-warning': !sessaoPausada, 'btn-info': sessaoPausada}"
+        (click)="pausar()"
+        [disabled]="carregando || !sessaoAtiva">
+        {{ sessaoPausada ? '🔄 Retomar' : '⏸️ Pausar' }}
+      </button>
+
+      <button 
+        class="btn btn-danger"
+        title="Finalizar a sessão"
+        (click)="parar()"
+        [disabled]="carregando || !sessaoAtiva">
+        ⛔ Finalizar
+      </button>
     </div>
-    
-    <div class="campo-notas">
-      <input type="text" class="form-control" placeholder="Adicionar notas..." [(ngModel)]="notas">
+
+    <!-- ANOTAÇÕES -->
+    <div class="campo-notas fade-in" *ngIf="sessaoAtiva">
+      <label for="notas">📓 Anotações:</label>
+      <textarea 
+        id="notas"
+        class="form-control"
+        placeholder="Adicionar notas..." 
+        [(ngModel)]="notas"
+        (input)="onNotasChange()"
+        (blur)="salvarNotas()"
+        rows="3">
+      </textarea>
+      <div class="notas-info">
+        <small class="text-muted" *ngIf="notas !== ultimasNotas">💾 Salvando...</small>
+        <small class="text-success" *ngIf="notas === ultimasNotas && notas">✅ Notas salvas</small>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="cronometro-status fade-in" *ngIf="sessaoAtiva">
+      <div class="status" [ngClass]="{'status-ativo': !sessaoPausada, 'status-pausado': sessaoPausada}">
+        {{ sessaoPausada ? '⏸️ Pausado' : '✅ Em andamento' }}
+      </div>
+    </div>
+
+    <!-- ERRO -->
+    <div class="mensagem-erro fade-in" *ngIf="erro">
+      <div class="alert alert-danger">
+        ❗ {{ erro }}
+      </div>
+    </div>
+
+    <!-- CARREGANDO -->
+    <div class="loading-indicator fade-in" *ngIf="carregando">
+      <div class="spinner"></div>
+      <span>⏳ Carregando...</span>
     </div>
   </div>
+
+  <!-- Modal de Retorno -->
+<div class="modal-overlay fade-in" *ngIf="mostrarModalRetorno">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Sessão de Estudos Pausada</h4>
+      </div>
+      <div class="modal-body">
+        <p>Sua sessão de estudos foi pausada automaticamente porque você fechou a página ou perdeu a conexão com a internet.</p>
+        <p>O que deseja fazer agora?</p>
+        
+        <div class="sessao-info">
+          <p><strong>Categoria:</strong> {{ obterNomeCategoria(categoriaId) }}</p>
+          <p><strong>Matéria:</strong> {{ obterNomeMateria(materiaId) }}</p>
+          <p *ngIf="topicoId"><strong>Tópico:</strong> {{ obterNomeTopico(topicoId) }}</p>
+          <p><strong>Tempo decorrido:</strong> {{ tempo }}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" (click)="finalizarSessaoRetorno()">
+          Finalizar Sessão
+        </button>
+        <button class="btn btn-primary" (click)="continuarSessao()">
+          Continuar Estudando
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

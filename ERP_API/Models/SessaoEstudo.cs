@@ -15,6 +15,10 @@ namespace ERP_API.Models.Entities
         public TimeSpan TempoEstudado { get; set; }
         public DateTime CriadoEm { get; set; }
         public DateTime AtualizadoEm { get; set; }
+        public string NomeMateria { get; set; }
+        public string NomeTopico { get; set; }
+        public string NomeCategoria { get; set; }
+        public int? CategoriaId { get; set; }
     }
 
     public class PausaSessao
