@@ -17,8 +17,8 @@ export class TempoEstudoComponent implements OnInit {
   constructor(private dashboardService: SessoesEstudoService) {}
 
   ngOnInit(): void {
-    this.dashboardService.getDashboard('semana').subscribe({
-      next: (res: SessaoDashboardStatsDto | null) => {
+    this.dashboardService.getDashboard('semana', new Date()).subscribe({
+      next: (res) => {
         if (res && res.tempoTotalEstudado != null) {
           this.tempoTotal = this.formatarTempo(res.tempoTotalEstudado);
         } else {

@@ -86,9 +86,9 @@ namespace ERP_API.Services
                     dataFim = dataReferencia.Date.AddDays(1).AddSeconds(-1); 
                     break;
                 case "semana":
-                    // Obtém o primeiro dia da semana (domingo)
-                    int diaSemana = (int)dataReferencia.DayOfWeek;
-                    dataInicio = dataReferencia.AddDays(-diaSemana);
+                    int diff = (int)dataReferencia.DayOfWeek - 1;
+                    if (diff < 0) diff = 6; // domingo vira 6
+                    dataInicio = dataReferencia.AddDays(-diff);
                     dataFim = dataInicio.AddDays(6);
                     break;
                 case "mes":

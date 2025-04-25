@@ -76,9 +76,13 @@ export class SessoesEstudoService {
   getDashboard(periodo: string = 'semana', data?: Date): Observable<any> {
     let params = new HttpParams().set('periodo', periodo);
   
-    // Adiciona o parâmetro 'data' apenas se a data for fornecida
+    // Adiciona o parâmetro 'data' no formato MM/dd/yyyy
     if (data) {
-      params = params.set('data', data.toISOString());
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = data.getFullYear();
+      const dataFormatada = `${mes}/${dia}/${ano}`;
+      params = params.set('data', dataFormatada);
     }
   
     return this.http.get<any>(`${this.apiUrl}/dashboard`, {

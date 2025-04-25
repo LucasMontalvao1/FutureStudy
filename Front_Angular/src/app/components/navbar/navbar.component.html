@@ -2,7 +2,7 @@
   <div class="navbar-container">
     <!-- Logo e título (clicável apenas em telas menores) -->
     <div class="navbar-brand">
-      <a class="logo-link" (click)="toggleMenu($event)">
+      <a routerLink="/home" class="logo-link" (click)="toggleMenu($event)">
         <div class="navbar-logo">{{ appName.charAt(0) }}</div>
         <span class="navbar-title">{{ appName }}</span>
       </a>
