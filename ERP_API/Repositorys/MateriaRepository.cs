@@ -27,14 +27,10 @@ namespace ERP_API.Repositorys
                     WHERE usuario_id = @usuarioId
                     ORDER BY nome";
 
-                var parameters = new MySqlParameter[]
-                {
-                    new MySqlParameter("@usuarioId", usuarioId)
-                };
-
+                var parameters = new MySqlParameter[] { new MySqlParameter("@usuarioId", usuarioId) };
                 var dataTable = await _databaseService.ExecuteQueryAsync(query, parameters);
-                var materias = new List<Materia>();
 
+                var materias = new List<Materia>();
                 foreach (DataRow row in dataTable.Rows)
                 {
                     materias.Add(MapRowToMateria(row));
@@ -59,11 +55,7 @@ namespace ERP_API.Repositorys
                     FROM materias
                     WHERE id = @id";
 
-                var parameters = new MySqlParameter[]
-                {
-                    new MySqlParameter("@id", id)
-                };
-
+                var parameters = new MySqlParameter[] { new MySqlParameter("@id", id) };
                 var dataTable = await _databaseService.ExecuteQueryAsync(query, parameters);
 
                 if (dataTable.Rows.Count == 0)
@@ -144,16 +136,16 @@ namespace ERP_API.Repositorys
             try
             {
                 string query = @"
-            SELECT m.id, m.usuario_id, m.nome, m.cor, m.criado_em, m.atualizado_em, m.categoria_id
-            FROM materias m
-            INNER JOIN categorias c ON m.categoria_id = c.id
-            WHERE m.categoria_id = @categoriaId AND m.usuario_id = @usuarioId
-            ORDER BY m.nome";
+                    SELECT m.id, m.usuario_id, m.nome, m.cor, m.criado_em, m.atualizado_em, m.categoria_id
+                    FROM materias m
+                    INNER JOIN categorias c ON m.categoria_id = c.id
+                    WHERE m.categoria_id = @categoriaId AND m.usuario_id = @usuarioId
+                    ORDER BY m.nome";
 
                 var parameters = new MySqlParameter[]
                 {
-            new MySqlParameter("@categoriaId", categoriaId),
-            new MySqlParameter("@usuarioId", usuarioId)
+                    new MySqlParameter("@categoriaId", categoriaId),
+                    new MySqlParameter("@usuarioId", usuarioId)
                 };
 
                 var dataTable = await _databaseService.ExecuteQueryAsync(query, parameters);
@@ -164,36 +156,40 @@ namespace ERP_API.Repositorys
                     materias.Add(MapRowToMateria(row));
                 }
 
-                _logger.LogInformation("Obtidas {Count} matérias para a categoria {CategoriaId} do usuário {UsuarioId}",
-                    materias.Count, categoriaId, usuarioId);
+                _logger.LogInformation("Obtidas {Count} matérias para a categoria {CategoriaId} do usuário {UsuarioId}", materias.Count, categoriaId, usuarioId);
                 return materias;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao obter matérias da categoria {CategoriaId} para o usuário {UsuarioId}",
-                    categoriaId, usuarioId);
+                _logger.LogError(ex, "Erro ao obter matérias da categoria {CategoriaId} para o usuário {UsuarioId}", categoriaId, usuarioId);
                 throw;
             }
         }
+
         public async Task<Materia> CreateAsync(Materia materia)
         {
             try
             {
+                // Query SQL para inserir a matéria com o CategoriaId
                 string query = @"
-                    INSERT INTO materias (usuario_id, nome, cor)
-                    VALUES (@usuarioId, @nome, @cor);
-                    SELECT LAST_INSERT_ID();";
+            INSERT INTO materias (usuario_id, nome, cor, categoria_id)
+            VALUES (@usuarioId, @nome, @cor, @categoriaId);
+            SELECT LAST_INSERT_ID();";
 
+                // Parâmetros para a execução da query, incluindo o CategoriaId
                 var parameters = new MySqlParameter[]
                 {
-                    new MySqlParameter("@usuarioId", materia.UsuarioId),
-                    new MySqlParameter("@nome", materia.Nome),
-                    new MySqlParameter("@cor", materia.Cor)
+            new MySqlParameter("@usuarioId", materia.UsuarioId),
+            new MySqlParameter("@nome", materia.Nome),
+            new MySqlParameter("@cor", materia.Cor),
+            new MySqlParameter("@categoriaId", materia.CategoriaId)  // Adicionando o CategoriaId
                 };
 
+                // Executar a query e obter o ID da nova matéria
                 var id = await _databaseService.ExecuteScalarAsync(query, parameters);
                 materia.Id = Convert.ToInt32(id);
 
+                // Obter os dados da matéria criada, incluindo timestamps (CriadoEm, AtualizadoEm)
                 var createdMateria = await GetByIdAsync(materia.Id);
                 if (createdMateria != null)
                 {
@@ -210,6 +206,7 @@ namespace ERP_API.Repositorys
                 throw;
             }
         }
+
 
         public async Task<bool> UpdateAsync(Materia materia)
         {
@@ -251,11 +248,7 @@ namespace ERP_API.Repositorys
             try
             {
                 string query = "DELETE FROM materias WHERE id = @id";
-
-                var parameters = new MySqlParameter[]
-                {
-                    new MySqlParameter("@id", id)
-                };
+                var parameters = new MySqlParameter[] { new MySqlParameter("@id", id) };
 
                 var affectedRows = await _databaseService.ExecuteNonQueryAsync(query, parameters);
 

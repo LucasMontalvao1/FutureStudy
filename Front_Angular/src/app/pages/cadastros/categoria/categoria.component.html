@@ -1,1 +1,106 @@
-<p>categoria works!</p>
+<div class="categories-container">
+  <!-- Cabeçalho com título e botão para adicionar -->
+  <div class="header">
+    <h1 class="title">Gerenciamento de Categorias</h1>
+    <button class="add-button" (click)="novaCategoria()">
+      <mat-icon>add</mat-icon>
+      Nova Categoria
+    </button>
+  </div>
+
+  <!-- Formulário -->
+  <div class="form-card" *ngIf="modoEdicao || mostrandoFormulario">
+    <div class="form-header">
+      <h2 class="form-title">{{ modoEdicao ? 'Editar Categoria' : 'Nova Categoria' }}</h2>
+    </div>
+    <div class="form-content">
+      <form [formGroup]="categoriaForm" (ngSubmit)="salvarCategoria()">
+        <div class="form-group">
+          <label for="nome">Nome da Categoria*</label>
+          <input 
+            id="nome"
+            class="form-control" 
+            formControlName="nome" 
+            placeholder="Digite o nome da categoria" 
+            autocomplete="off">
+          <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['required']">
+            Nome da categoria é obrigatório
+          </div>
+          <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['maxlength']">
+            Nome não pode exceder 100 caracteres
+          </div>
+        </div>
+
+        <div class="form-group color-group">
+          <div class="color-picker">
+            <input type="color" formControlName="cor" class="color-input">
+          </div>
+          <div class="color-field">
+            <label for="cor">Código de Cor*</label>
+            <div class="color-input-wrapper">
+              <input 
+                id="cor"
+                class="form-control" 
+                formControlName="cor" 
+                placeholder="#RRGGBB" 
+                autocomplete="off">
+              <button type="button" class="color-picker-btn">
+                <mat-icon>colorize</mat-icon>
+              </button>
+            </div>
+            <div class="invalid-feedback" *ngIf="submitted && f['cor'].errors?.['required']">
+              Cor é obrigatória
+            </div>
+            <div class="invalid-feedback" *ngIf="submitted && f['cor'].errors?.['pattern']">
+              Formato inválido. Use #RRGGBB
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-cadastrar">
+            <mat-icon>check</mat-icon>
+            Cadastrar
+          </button>
+          <button type="button" class="btn-cancelar" (click)="limparFormulario()">
+            <mat-icon>close</mat-icon>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mensagem quando não há categorias -->
+  <div class="empty-state" *ngIf="!carregando && categorias.length === 0">
+    <div class="empty-content">
+      <mat-icon class="empty-icon">category</mat-icon>
+      <p>Nenhuma categoria cadastrada.</p>
+      <p>Clique em "Nova Categoria" para começar.</p>
+    </div>
+  </div>
+
+  <!-- Indicador de carregamento -->
+  <div *ngIf="carregando" class="loading-indicator">
+    <mat-spinner [diameter]="32"></mat-spinner>
+    <span>Carregando categorias...</span>
+  </div>
+
+  <!-- Lista de categorias -->
+  <div class="categorias-lista" *ngIf="!carregando && categorias.length > 0">
+    <div *ngFor="let categoria of categorias" class="categoria-item">
+      <div class="categoria-info">
+        <div class="categoria-cor" [style.background-color]="categoria.cor"></div>
+        <div class="categoria-nome">{{ categoria.nome }}</div>
+      </div>
+      <div class="categoria-acoes">
+        <button class="edit-button" (click)="editarCategoria(categoria)" matTooltip="Editar">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button class="delete-button" (click)="confirmarExclusao(categoria)" matTooltip="Excluir">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

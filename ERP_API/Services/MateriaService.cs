@@ -3,6 +3,9 @@ using ERP_API.Models.DTOs;
 using ERP_API.Repositorys;
 using ERP_API.Repositorys.Interfaces;
 using ERP_API.Services.Interfaces;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 
 namespace ERP_API.Services
 {
@@ -33,8 +36,7 @@ namespace ERP_API.Services
 
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
-                    _logger.LogWarning("Usuário {UsuarioId} não encontrado ao obter matérias", usuarioId);
-                    return Enumerable.Empty<Materia>();
+                    throw new UserNotFoundException($"Usuário {usuarioId} não encontrado");
                 }
 
                 return await _materiaRepository.GetAllByUsuarioIdAsync(usuarioId);
@@ -53,17 +55,14 @@ namespace ERP_API.Services
                 _logger.LogInformation("Obtendo matéria {Id} para o usuário {UsuarioId}", id, usuarioId);
 
                 var materia = await _materiaRepository.GetByIdAsync(id);
-
                 if (materia == null)
                 {
-                    _logger.LogWarning("Matéria {Id} não encontrada", id);
-                    return null;
+                    throw new MateriaNotFoundException($"Matéria {id} não encontrada");
                 }
 
                 if (materia.UsuarioId != usuarioId)
                 {
-                    _logger.LogWarning("Matéria {Id} não pertence ao usuário {UsuarioId}", id, usuarioId);
-                    return null;
+                    throw new MateriaNotFoundException($"A matéria {id} não pertence ao usuário {usuarioId}");
                 }
 
                 return materia;
@@ -83,19 +82,26 @@ namespace ERP_API.Services
 
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
-                    throw new InvalidOperationException($"Usuário {usuarioId} não encontrado");
+                    throw new UserNotFoundException($"Usuário {usuarioId} não encontrado");
                 }
 
                 if (await _materiaRepository.ExistsByNomeAndUsuarioIdAsync(dto.Nome, usuarioId))
                 {
-                    throw new InvalidOperationException($"Já existe uma matéria com o nome '{dto.Nome}' para este usuário");
+                    throw new ValidationException($"Já existe uma matéria com o nome '{dto.Nome}' para este usuário");
+                }
+
+                // Verificar se a categoria existe para o usuário
+                if (!await _categoriaRepository.BelongsToUsuarioAsync(dto.CategoriaId, usuarioId))
+                {
+                    throw new ValidationException($"Categoria {dto.CategoriaId} não pertence ao usuário {usuarioId}");
                 }
 
                 var materia = new Materia
                 {
                     UsuarioId = usuarioId,
                     Nome = dto.Nome,
-                    Cor = dto.Cor
+                    Cor = dto.Cor,
+                    CategoriaId = dto.CategoriaId 
                 };
 
                 return await _materiaRepository.CreateAsync(materia);
@@ -107,6 +113,7 @@ namespace ERP_API.Services
             }
         }
 
+
         public async Task<IEnumerable<Materia>> GetByCategoriaIdAsync(int categoriaId, int usuarioId)
         {
             try
@@ -116,15 +123,12 @@ namespace ERP_API.Services
 
                 if (!await _authRepository.UsuarioExiste(usuarioId))
                 {
-                    _logger.LogWarning("Usuário {UsuarioId} não encontrado ao obter matérias por categoria", usuarioId);
-                    return Enumerable.Empty<Materia>();
+                    throw new UserNotFoundException($"Usuário {usuarioId} não encontrado");
                 }
 
                 if (!await _categoriaRepository.BelongsToUsuarioAsync(categoriaId, usuarioId))
                 {
-                    _logger.LogWarning("Categoria {CategoriaId} não encontrada ou não pertence ao usuário {UsuarioId}", 
-                        categoriaId, usuarioId);
-                    return Enumerable.Empty<Materia>();
+                    throw new ValidationException($"Categoria {categoriaId} não pertence ao usuário {usuarioId}");
                 }
 
                 return await _materiaRepository.GetByCategoriaIdAsync(categoriaId, usuarioId);
@@ -153,7 +157,7 @@ namespace ERP_API.Services
                 {
                     if (await _materiaRepository.ExistsByNomeAndUsuarioIdAsync(dto.Nome, usuarioId, id))
                     {
-                        throw new InvalidOperationException($"Já existe outra matéria com o nome '{dto.Nome}' para este usuário");
+                        throw new ValidationException($"Já existe outra matéria com o nome '{dto.Nome}' para este usuário");
                     }
 
                     materia.Nome = dto.Nome;
@@ -173,8 +177,7 @@ namespace ERP_API.Services
                 var updated = await _materiaRepository.UpdateAsync(materia);
                 if (!updated)
                 {
-                    _logger.LogWarning("Falha ao atualizar matéria {Id}", id);
-                    return null;
+                    throw new ValidationException($"Falha ao atualizar matéria {id}");
                 }
 
                 return await _materiaRepository.GetByIdAsync(id);
@@ -194,8 +197,7 @@ namespace ERP_API.Services
 
                 if (!await _materiaRepository.BelongsToUsuarioAsync(id, usuarioId))
                 {
-                    _logger.LogWarning("Matéria {Id} não encontrada ou não pertence ao usuário {UsuarioId}", id, usuarioId);
-                    return false;
+                    throw new MateriaNotFoundException($"Matéria {id} não encontrada ou não pertence ao usuário {usuarioId}");
                 }
 
                 return await _materiaRepository.DeleteAsync(id);
@@ -206,5 +208,15 @@ namespace ERP_API.Services
                 throw;
             }
         }
+    }
+
+    public class UserNotFoundException : Exception
+    {
+        public UserNotFoundException(string message) : base(message) { }
+    }
+
+    public class MateriaNotFoundException : Exception
+    {
+        public MateriaNotFoundException(string message) : base(message) { }
     }
 }

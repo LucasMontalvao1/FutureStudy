@@ -3,7 +3,7 @@ export interface Materia {
     usuario_id: number;
     usuarioId?: number; 
     categoria_id: number;
-    categoriaId?: number; 
+    categoriaId: number; 
     nome: string;
     cor?: string;
     criado_em?: Date;
@@ -11,3 +11,4 @@ export interface Materia {
     atualizado_em?: Date;
     atualizadoEm?: Date; 
   }
+  

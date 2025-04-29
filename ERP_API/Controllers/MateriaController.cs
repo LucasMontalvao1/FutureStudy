@@ -26,9 +26,7 @@ namespace ERP_API.Controllers
             {
                 var usuarioId = GetUsuarioIdFromToken();
                 if (usuarioId == null)
-                {
                     return Unauthorized(new { message = "Usuário não identificado" });
-                }
 
                 var materias = await _materiaService.GetAllByUsuarioIdAsync(usuarioId.Value);
 
@@ -38,6 +36,7 @@ namespace ERP_API.Controllers
                     UsuarioId = m.UsuarioId,
                     Nome = m.Nome,
                     Cor = m.Cor,
+                    CategoriaId = m.CategoriaId,
                     CriadoEm = m.CriadoEm,
                     AtualizadoEm = m.AtualizadoEm
                 });
@@ -58,16 +57,12 @@ namespace ERP_API.Controllers
             {
                 var usuarioId = GetUsuarioIdFromToken();
                 if (usuarioId == null)
-                {
                     return Unauthorized(new { message = "Usuário não identificado" });
-                }
 
                 var materia = await _materiaService.GetByIdAsync(id, usuarioId.Value);
 
                 if (materia == null)
-                {
                     return NotFound(new { message = "Matéria não encontrada" });
-                }
 
                 var response = new MateriaResponseDto
                 {
@@ -75,6 +70,7 @@ namespace ERP_API.Controllers
                     UsuarioId = materia.UsuarioId,
                     Nome = materia.Nome,
                     Cor = materia.Cor,
+                    CategoriaId = materia.CategoriaId,
                     CriadoEm = materia.CriadoEm,
                     AtualizadoEm = materia.AtualizadoEm
                 };
@@ -95,9 +91,7 @@ namespace ERP_API.Controllers
             {
                 var usuarioId = GetUsuarioIdFromToken();
                 if (usuarioId == null)
-                {
                     return Unauthorized(new { message = "Usuário não identificado" });
-                }
 
                 var materias = await _materiaService.GetByCategoriaIdAsync(categoriaId, usuarioId.Value);
 
@@ -107,6 +101,7 @@ namespace ERP_API.Controllers
                     UsuarioId = m.UsuarioId,
                     Nome = m.Nome,
                     Cor = m.Cor,
+                    CategoriaId = m.CategoriaId,
                     CriadoEm = m.CriadoEm,
                     AtualizadoEm = m.AtualizadoEm
                 });
@@ -124,17 +119,13 @@ namespace ERP_API.Controllers
         public async Task<IActionResult> Create([FromBody] MateriaRequestDto dto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
                 var usuarioId = GetUsuarioIdFromToken();
                 if (usuarioId == null)
-                {
                     return Unauthorized(new { message = "Usuário não identificado" });
-                }
 
                 var materia = await _materiaService.CreateAsync(dto, usuarioId.Value);
 
@@ -144,6 +135,7 @@ namespace ERP_API.Controllers
                     UsuarioId = materia.UsuarioId,
                     Nome = materia.Nome,
                     Cor = materia.Cor,
+                    CategoriaId = materia.CategoriaId,
                     CriadoEm = materia.CriadoEm,
                     AtualizadoEm = materia.AtualizadoEm
                 };
@@ -166,24 +158,18 @@ namespace ERP_API.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] MateriaUpdateRequestDto dto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
                 var usuarioId = GetUsuarioIdFromToken();
                 if (usuarioId == null)
-                {
                     return Unauthorized(new { message = "Usuário não identificado" });
-                }
 
                 var materia = await _materiaService.UpdateAsync(id, dto, usuarioId.Value);
 
                 if (materia == null)
-                {
                     return NotFound(new { message = "Matéria não encontrada ou você não tem permissão para editá-la" });
-                }
 
                 var response = new MateriaResponseDto
                 {
@@ -191,6 +177,7 @@ namespace ERP_API.Controllers
                     UsuarioId = materia.UsuarioId,
                     Nome = materia.Nome,
                     Cor = materia.Cor,
+                    CategoriaId = materia.CategoriaId,
                     CriadoEm = materia.CriadoEm,
                     AtualizadoEm = materia.AtualizadoEm
                 };
@@ -216,16 +203,12 @@ namespace ERP_API.Controllers
             {
                 var usuarioId = GetUsuarioIdFromToken();
                 if (usuarioId == null)
-                {
                     return Unauthorized(new { message = "Usuário não identificado" });
-                }
 
                 var deleted = await _materiaService.DeleteAsync(id, usuarioId.Value);
 
                 if (!deleted)
-                {
                     return NotFound(new { message = "Matéria não encontrada ou você não tem permissão para excluí-la" });
-                }
 
                 return NoContent();
             }

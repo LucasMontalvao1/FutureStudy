@@ -1,1 +1,209 @@
-<p>materia works!</p>
+<div class="categories-container">
+    <!-- Cabeçalho com título e botão para adicionar -->
+    <div class="header">
+      <h1 class="title">Gerenciamento de Matérias</h1>
+      <button 
+        class="add-button" 
+        (click)="novaMateria()" 
+        [disabled]="categoriaSelecionada === null"
+        aria-label="Adicionar nova matéria">
+        <mat-icon>add</mat-icon>
+        Nova Matéria
+      </button>
+    </div>
+  
+    <!-- Seletor de Categoria -->
+    <div class="categoria-selector" role="region" aria-label="Seletor de categorias">
+      <h2 class="selector-title">Selecione uma categoria</h2>
+      
+      <div *ngIf="carregandoCategorias" class="loading-indicator">
+        <mat-spinner [diameter]="32" aria-label="Carregando categorias"></mat-spinner>
+        <span>Carregando categorias...</span>
+      </div>
+      
+      <div *ngIf="!carregandoCategorias" class="categoria-options">
+        <div 
+          *ngFor="let categoria of categorias" 
+          class="categoria-option" 
+          [class.selected]="categoriaSelecionada === categoria.id"
+          (click)="onCategoriaSelecionada(categoria.id)"
+          role="button"
+          [attr.aria-pressed]="categoriaSelecionada === categoria.id"
+          [attr.aria-label]="'Selecionar categoria ' + categoria.nome">
+          <div class="option-color" [style.background-color]="categoria.cor"></div>
+          <div class="option-name">{{ categoria.nome }}</div>
+        </div>
+        
+        <div 
+          *ngIf="categorias.length > 0" 
+          class="categoria-option clear-option" 
+          [class.selected]="categoriaSelecionada === null"
+          (click)="onCategoriaSelecionada(null)"
+          role="button"
+          [attr.aria-pressed]="categoriaSelecionada === null"
+          aria-label="Mostrar todas as categorias">
+          <div class="option-name">Mostrar todas</div>
+        </div>
+      </div>
+      
+      <div *ngIf="!carregandoCategorias && categorias.length === 0" class="empty-categorias">
+        <p>Nenhuma categoria cadastrada.</p>
+        <p>Cadastre categorias antes de gerenciar matérias.</p>
+      </div>
+    </div>
+  
+    <!-- Formulário -->
+    <div class="form-card" *ngIf="formMode !== FormMode.HIDDEN">
+      <div class="form-header">
+        <h2 class="form-title">{{ formMode === FormMode.EDIT ? 'Editar Matéria' : 'Nova Matéria' }}</h2>
+      </div>
+      <div class="form-content">
+        <form [formGroup]="materiaForm" (ngSubmit)="salvarMateria()" aria-label="Formulário de matéria">
+          <div class="form-group">
+            <label for="nome">Nome da Matéria*</label>
+            <input 
+              id="nome"
+              class="form-control" 
+              formControlName="nome" 
+              placeholder="Digite o nome da matéria" 
+              autocomplete="off"
+              [class.is-invalid]="submitted && f['nome'].errors">
+            <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['required']">
+              Nome da matéria é obrigatório
+            </div>
+            <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['maxlength']">
+              Nome não pode exceder 100 caracteres
+            </div>
+            <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['pattern']">
+              Nome contém caracteres inválidos
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="categoria_id">Categoria*</label>
+            <select 
+              class="form-control" 
+              formControlName="categoriaid" 
+              id="categoria_id"
+              [class.is-invalid]="submitted && f['categoriaid'].errors">
+              <option [ngValue]="null" disabled>Selecione uma categoria</option>
+              <option *ngFor="let categoria of categorias" [ngValue]="categoria.id">
+                {{ categoria.nome }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="submitted && f['categoriaid'].errors?.['required']">
+              Categoria é obrigatória
+            </div>
+          </div>
+  
+          <div class="form-group color-group">
+            <div class="color-picker">
+              <input 
+                type="color" 
+                formControlName="cor" 
+                class="color-input"
+                aria-label="Seletor de cor visual">
+            </div>
+            <div class="color-field">
+              <label for="cor">Código de Cor*</label>
+              <div class="color-input-wrapper">
+                <input 
+                  id="cor"
+                  class="form-control" 
+                  formControlName="cor" 
+                  placeholder="#RRGGBB" 
+                  autocomplete="off"
+                  [class.is-invalid]="submitted && f['cor'].errors">
+                <button 
+                  type="button" 
+                  class="color-picker-btn"
+                  aria-label="Abrir seletor de cor">
+                  <mat-icon>colorize</mat-icon>
+                </button>
+              </div>
+              <div class="invalid-feedback" *ngIf="submitted && f['cor'].errors?.['required']">
+                Cor é obrigatória
+              </div>
+              <div class="invalid-feedback" *ngIf="submitted && f['cor'].errors?.['pattern']">
+                Formato inválido. Use #RRGGBB
+              </div>
+            </div>
+          </div>
+  
+          <div class="form-actions">
+            <button type="submit" class="btn-cadastrar" aria-label="Salvar matéria">
+              <mat-icon>check</mat-icon>
+              {{ formMode === FormMode.EDIT ? 'Atualizar' : 'Cadastrar' }}
+            </button>
+            <button 
+              type="button" 
+              class="btn-cancelar" 
+              (click)="limparFormulario()"
+              aria-label="Cancelar edição">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  
+    <!-- Mensagem quando não há matérias -->
+    <div class="empty-state" *ngIf="!carregando && materias.length === 0 && categorias.length > 0 && categoriaSelecionada !== null">
+      <div class="empty-content">
+        <mat-icon class="empty-icon" aria-hidden="true">menu_book</mat-icon>
+        <p>Nenhuma matéria cadastrada para esta categoria.</p>
+        <p>Clique em "Nova Matéria" para começar.</p>
+      </div>
+    </div>
+  
+    <!-- Indicador de carregamento -->
+    <div *ngIf="carregando" class="loading-indicator">
+      <mat-spinner [diameter]="32" aria-label="Carregando matérias"></mat-spinner>
+      <span>Carregando matérias...</span>
+    </div>
+  
+    <!-- Lista de matérias -->
+    <div 
+      class="materias-lista" 
+      *ngIf="!carregando && materias.length > 0"
+      role="region" 
+      aria-label="Lista de matérias">
+      <div 
+        *ngFor="let materia of materias" 
+        class="materia-item"
+        [attr.aria-label]="'Matéria: ' + materia.nome">
+        <div class="materia-info">
+          <div 
+            class="materia-cor" 
+            [style.background-color]="materia.cor || '#CCCCCC'"
+            aria-hidden="true"></div>
+          <div class="materia-nome">{{ materia.nome }}</div>
+        </div>
+        <div class="materia-meta">
+          <div 
+            class="categoria-badge" 
+            [style.background-color]="obterCorCategoria(getCategoriaId(materia))"
+            [style.color]="isLightColor(obterCorCategoria(getCategoriaId(materia))) ? '#333' : '#fff'">
+            {{ obterNomeCategoria(getCategoriaId(materia)) }}
+          </div>
+        </div>
+        <div class="materia-acoes">
+          <button 
+            class="edit-button" 
+            (click)="editarMateria(materia)" 
+            matTooltip="Editar"
+            aria-label="Editar matéria">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button 
+            class="delete-button" 
+            (click)="confirmarExclusao(materia)" 
+            matTooltip="Excluir"
+            aria-label="Excluir matéria">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

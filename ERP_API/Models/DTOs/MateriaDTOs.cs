@@ -11,6 +11,9 @@ namespace ERP_API.Models.DTOs
         [StringLength(7, MinimumLength = 7, ErrorMessage = "A cor deve estar no formato hexadecimal #RRGGBB")]
         [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "A cor deve estar no formato hexadecimal #RRGGBB")]
         public string Cor { get; set; } = "#CCCCCC";
+
+        [Required(ErrorMessage = "A categoria é obrigatória")]
+        public int CategoriaId { get; set; }
     }
 
     public class MateriaResponseDto
@@ -18,9 +21,10 @@ namespace ERP_API.Models.DTOs
         public int Id { get; set; }
         public int UsuarioId { get; set; }
         public string Nome { get; set; } = string.Empty;
-        public string Cor { get; set; } = string.Empty;
-        public DateTime CriadoEm { get; set; }
-        public DateTime AtualizadoEm { get; set; }
+        public string Cor { get; set; } = "#CCCCCC";
+        public int CategoriaId { get; set; }
+        public DateTime? CriadoEm { get; set; }
+        public DateTime? AtualizadoEm { get; set; }
     }
 
     public class MateriaUpdateRequestDto
@@ -31,5 +35,7 @@ namespace ERP_API.Models.DTOs
         [StringLength(7, MinimumLength = 7, ErrorMessage = "A cor deve estar no formato hexadecimal #RRGGBB")]
         [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "A cor deve estar no formato hexadecimal #RRGGBB")]
         public string? Cor { get; set; }
+
+        public int? CategoriaId { get; set; } 
     }
 }
