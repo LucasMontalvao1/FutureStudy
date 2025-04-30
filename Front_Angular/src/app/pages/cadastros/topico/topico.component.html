@@ -1,1 +1,172 @@
-<p>topico works!</p>
+<div class="topics-container">
+    <!-- Cabeçalho com título e botão para adicionar -->
+    <div class="header">
+      <h1 class="title">Gerenciamento de Tópicos</h1>
+      <button 
+        class="add-button" 
+        (click)="novoTopico()" 
+        [disabled]="materiaSelecionada === null"
+        aria-label="Adicionar novo tópico">
+        <mat-icon>add</mat-icon>
+        Novo Tópico
+      </button>
+    </div>
+  
+    <!-- Seletor de Matéria -->
+    <div class="materia-selector" role="region" aria-label="Seletor de matérias">
+      <h2 class="selector-title">Selecione uma matéria</h2>
+      
+      <div *ngIf="carregandoMaterias" class="loading-indicator">
+        <mat-spinner [diameter]="32" aria-label="Carregando matérias"></mat-spinner>
+        <span>Carregando matérias...</span>
+      </div>
+      
+      <div *ngIf="!carregandoMaterias" class="materia-options">
+        <div 
+          *ngFor="let materia of materias" 
+          class="materia-option" 
+          [class.selected]="materiaSelecionada === materia.id"
+          (click)="onMateriaSelecionada(materia.id)"
+          role="button"
+          [attr.aria-pressed]="materiaSelecionada === materia.id"
+          [attr.aria-label]="'Selecionar matéria ' + materia.nome">
+          <div class="option-color" [style.background-color]="materia.cor"></div>
+          <div class="option-name">{{ materia.nome }}</div>
+        </div>
+        
+        <div 
+          *ngIf="materias.length > 0" 
+          class="materia-option clear-option" 
+          [class.selected]="materiaSelecionada === null"
+          (click)="onMateriaSelecionada(null)"
+          role="button"
+          [attr.aria-pressed]="materiaSelecionada === null"
+          aria-label="Mostrar todos os tópicos">
+          <div class="option-name">Mostrar todos</div>
+        </div>
+      </div>
+      
+      <div *ngIf="!carregandoMaterias && materias.length === 0" class="empty-materias">
+        <p>Nenhuma matéria cadastrada.</p>
+        <p>Cadastre matérias antes de gerenciar tópicos.</p>
+      </div>
+    </div>
+  
+    <!-- Formulário -->
+    <div class="form-card" *ngIf="formMode !== FormMode.HIDDEN">
+      <div class="form-header">
+        <h2 class="form-title">{{ formMode === FormMode.EDIT ? 'Editar Tópico' : 'Novo Tópico' }}</h2>
+      </div>
+      <div class="form-content">
+        <form [formGroup]="topicoForm" (ngSubmit)="salvarTopico()" aria-label="Formulário de tópico">
+          <div class="form-group">
+            <label for="nome">Nome do Tópico*</label>
+            <input 
+              id="nome"
+              class="form-control" 
+              formControlName="nome" 
+              placeholder="Digite o nome do tópico" 
+              autocomplete="off"
+              [class.is-invalid]="submitted && f['nome'].errors">
+            <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['required']">
+              Nome do tópico é obrigatório
+            </div>
+            <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['maxlength']">
+              Nome não pode exceder 100 caracteres
+            </div>
+            <div class="invalid-feedback" *ngIf="submitted && f['nome'].errors?.['pattern']">
+              Nome contém caracteres inválidos
+            </div>
+          </div>
+  
+          <div class="form-group">
+            <label for="materia_id">Matéria*</label>
+            <select 
+              class="form-control" 
+              formControlName="materia_id" 
+              id="materia_id"
+              [class.is-invalid]="submitted && f['materia_id'].errors">
+              <option [ngValue]="null" disabled>Selecione uma matéria</option>
+              <option *ngFor="let materia of materias" [ngValue]="materia.id">
+                {{ materia.nome }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="submitted && f['materia_id'].errors?.['required']">
+              Matéria é obrigatória
+            </div>
+          </div>
+  
+          <div class="form-actions">
+            <button type="submit" class="btn-cadastrar" aria-label="Salvar tópico">
+              <mat-icon>check</mat-icon>
+              {{ formMode === FormMode.EDIT ? 'Atualizar' : 'Cadastrar' }}
+            </button>
+            <button 
+              type="button" 
+              class="btn-cancelar" 
+              (click)="limparFormulario()"
+              aria-label="Cancelar edição">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  
+    <!-- Mensagem quando não há tópicos -->
+    <div class="empty-state" *ngIf="!carregando && topicos.length === 0 && materias.length > 0 && materiaSelecionada !== null">
+      <div class="empty-content">
+        <mat-icon class="empty-icon" aria-hidden="true">topic</mat-icon>
+        <p>Nenhum tópico cadastrado para esta matéria.</p>
+        <p>Clique em "Novo Tópico" para começar.</p>
+      </div>
+    </div>
+  
+    <!-- Indicador de carregamento -->
+    <div *ngIf="carregando" class="loading-indicator">
+      <mat-spinner [diameter]="32" aria-label="Carregando tópicos"></mat-spinner>
+      <span>Carregando tópicos...</span>
+    </div>
+  
+    <!-- Lista de tópicos -->
+    <div 
+      class="topicos-lista" 
+      *ngIf="!carregando && topicos.length > 0"
+      role="region" 
+      aria-label="Lista de tópicos">
+      <div 
+        *ngFor="let topico of topicos" 
+        class="topico-item"
+        [attr.aria-label]="'Tópico: ' + topico.nome">
+        <div class="topico-info">
+          <mat-icon class="topico-icon">subject</mat-icon>
+          <div class="topico-nome">{{ topico.nome }}</div>
+        </div>
+        <div class="topico-meta">
+          <div 
+            class="materia-badge" 
+            [style.background-color]="obterCorMateria(getMateriaid(topico))"
+            [style.color]="isLightColor(obterCorMateria(getMateriaid(topico))) ? '#333' : '#fff'">
+            {{ obterNomeMateria(getMateriaid(topico)) }}
+          </div>
+        </div>
+        <div class="topico-acoes">
+          <button 
+            class="edit-button" 
+            (click)="editarTopico(topico)" 
+            matTooltip="Editar"
+            aria-label="Editar tópico">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button 
+            class="delete-button" 
+            (click)="confirmarExclusao(topico)" 
+            matTooltip="Excluir"
+            aria-label="Excluir tópico">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

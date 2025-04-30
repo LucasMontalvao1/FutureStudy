@@ -54,28 +54,43 @@ export class TopicosService extends ApiService {
     if (!this.isBrowser) return;
     
     this.carregandoSubject.next(true);
+    console.log(`Buscando tópicos para matéria ID: ${materiaId}`);
     
-    // URL específica para buscar tópicos por matéria conforme sua API
-    this.http.get<Topico[]>(`${this.apiUrl}/materia/${materiaId}`, {
+    // URL atualizada para buscar tópicos por matéria
+    this.http.get<any[]>(`${this.apiUrl}/materia/${materiaId}`, {
       headers: this.getHeaders()
     }).pipe(
       tap(topicos => {
-        this.topicosFiltradosSubject.next(topicos);
+        console.log('Resposta da API:', topicos);
+        // Normalizar cada tópico retornado
+        const topicosNormalizados = topicos.map(t => this.normalizarTopico(t));
+        console.log('Tópicos normalizados:', topicosNormalizados);
+        this.topicosFiltradosSubject.next(topicosNormalizados);
         this.carregandoSubject.next(false);
       }),
       catchError(this.handleError('carregarTopicosPorMateria', []))
     ).subscribe();
   }
   
-  // Filtrar tópicos por matéria (usando dados já carregados)
   filtrarTopicosPorMateria(materiaId: number): void {
     if (!this.isBrowser) return;
     
+    console.log(`Filtrando tópicos localmente para matéria ID: ${materiaId}`);
+    // Primeiro, tente carregar da API
+    this.carregarTopicosPorMateria(materiaId);
+    
+    // Também filtre localmente (caso de fallback)
     const todosTopicos = this.topicosSubject.value;
+    console.log('Todos os tópicos disponíveis para filtrar:', todosTopicos);
+    
     const topicosFiltrados = todosTopicos.filter(
-      topico => topico.materia_id === materiaId || topico.materiaId === materiaId
+      topico => (topico.materia_id === materiaId || topico.materiaId === materiaId)
     );
-    this.topicosFiltradosSubject.next(topicosFiltrados);
+    console.log('Tópicos filtrados localmente:', topicosFiltrados);
+    
+    if (topicosFiltrados.length > 0) {
+      this.topicosFiltradosSubject.next(topicosFiltrados);
+    }
   }
   
   // Obter um tópico específico por ID
@@ -90,27 +105,50 @@ export class TopicosService extends ApiService {
   }
   
   // Criar um novo tópico
-  criarTopico(topico: Topico): Observable<Topico> {
+  criarTopico(topico: any): Observable<Topico> {
     if (!this.isBrowser) return new Observable<Topico>();
     
-    return this.http.post<Topico>(`${this.apiUrl}`, topico, {
+    // Adaptar o formato para o que a API espera
+    const topicoParaAPI = {
+      usuarioId: topico.usuario_id || 1, // Assumindo usuário ID 1 se não fornecido
+      materiaId: topico.materia_id,
+      nome: topico.nome
+    };
+    
+    console.log('Dados formatados para enviar à API:', topicoParaAPI);
+    
+    return this.http.post<any>(`${this.apiUrl}`, topicoParaAPI, {
       headers: this.getHeaders()
     }).pipe(
       tap(novoTopico => {
+        console.log('Resposta da API ao criar:', novoTopico);
+        // Normalizar o tópico retornado
+        const topicoNormalizado = this.normalizarTopico(novoTopico);
+        
         // Adicionar ao array local
         const topicosAtuais = this.topicosSubject.value;
-        this.topicosSubject.next([...topicosAtuais, novoTopico]);
+        this.topicosSubject.next([...topicosAtuais, topicoNormalizado]);
         
         // Atualizar tópicos filtrados se necessário
-        if (novoTopico.materia_id === topicosAtuais[0]?.materia_id) {
+        if (topicoNormalizado.materia_id === this.getMateriaIdFiltrado()) {
           const filtrados = this.topicosFiltradosSubject.value;
-          this.topicosFiltradosSubject.next([...filtrados, novoTopico]);
+          this.topicosFiltradosSubject.next([...filtrados, topicoNormalizado]);
         }
       }),
       catchError(this.handleError<Topico>('criarTopico'))
     );
   }
   
+  // Método auxiliar para obter a matéria ID atualmente filtrada
+  private getMateriaIdFiltrado(): number | null {
+    const topicosFiltrados = this.topicosFiltradosSubject.value;
+    if (topicosFiltrados.length > 0) {
+      return (topicosFiltrados[0].materia_id || topicosFiltrados[0].materiaId || null);
+    }
+    return null;
+  }
+
+
   // Atualizar um tópico existente
   atualizarTopico(id: number, topico: Partial<Topico>): Observable<Topico> {
     if (!this.isBrowser) return new Observable<Topico>();
@@ -127,11 +165,39 @@ export class TopicosService extends ApiService {
           this.topicosSubject.next([...topicosAtuais]);
           
           // Atualizar tópicos filtrados se necessário
-          this.filtrarTopicosPorMateria(topicoAtualizado.materia_id);
+          const materiaId = topicoAtualizado.materia_id || topicoAtualizado.materiaId;
+          if (materiaId !== undefined) {
+            this.filtrarTopicosPorMateria(materiaId);
+          }
         }
       }),
       catchError(this.handleError<Topico>(`atualizarTopico(${id})`))
     );
+  }
+
+  limparFiltros(): void {
+    console.log('Método limparFiltros chamado');
+    if (!this.isBrowser) return;
+    
+    // Atualizar a lista de tópicos filtrados com todos os tópicos
+    const todosTopicos = this.topicosSubject.value;
+    console.log('Todos os tópicos disponíveis:', todosTopicos);
+    this.topicosFiltradosSubject.next([...todosTopicos]);
+  }
+
+  private normalizarTopico(topico: any): Topico {
+    return {
+      id: topico.id,
+      usuario_id: topico.usuarioId || topico.usuario_id,
+      materia_id: topico.materiaId || topico.materia_id,
+      usuarioId: topico.usuarioId || topico.usuario_id,
+      materiaId: topico.materiaId || topico.materia_id,
+      nome: topico.nome,
+      criado_em: topico.criadoEm || topico.criado_em,
+      atualizado_em: topico.atualizadoEm || topico.atualizado_em,
+      criadoEm: topico.criadoEm || topico.criado_em,
+      atualizadoEm: topico.atualizadoEm || topico.atualizado_em
+    };
   }
   
   // Excluir um tópico

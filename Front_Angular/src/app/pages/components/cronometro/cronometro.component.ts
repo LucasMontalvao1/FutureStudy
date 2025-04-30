@@ -39,7 +39,6 @@ export class CronometroComponent implements OnInit, OnDestroy {
   sessaoPausada = false;
   erro: string | null = null;
 
-    // Modal de retorno
     mostrarModalRetorno = false;
     pausaAutomatica = false;
   
@@ -84,7 +83,6 @@ export class CronometroComponent implements OnInit, OnDestroy {
     this.destruir$.next();
     this.destruir$.complete();
 
-    // Remover event listeners
     if (this.isBrowser) {
       window.removeEventListener('beforeunload', this.handleBeforeUnload);
       window.removeEventListener('offline', this.handleOffline);
@@ -92,7 +90,6 @@ export class CronometroComponent implements OnInit, OnDestroy {
     }
   }
 
-   // Configurar os eventos para detectar quando o usuário fecha a página ou perde a conexão
    private configurarEventosPaginaVisibilidade(): void {
     if (!this.isBrowser) return;
     
@@ -127,8 +124,7 @@ export class CronometroComponent implements OnInit, OnDestroy {
       
       // Mensagem para o navegador (pode não aparecer em todos os navegadores)
       const mensagem = 'Você tem uma sessão de estudos ativa. Tem certeza que deseja sair?';
-      event.returnValue = mensagem; // Isso é o correto para BeforeUnloadEvent
-      // Remover o return, pois a função deve retornar void
+      event.returnValue = mensagem;
     }
   }
   
@@ -240,7 +236,6 @@ export class CronometroComponent implements OnInit, OnDestroy {
           this.notas = '';
           this.ultimasNotas = '';
           
-          // Limpar dados do localStorage
           if (this.isBrowser) {
             localStorage.removeItem('pausaAutomatica');
             localStorage.removeItem('pausaId');
@@ -336,7 +331,7 @@ export class CronometroComponent implements OnInit, OnDestroy {
       this.cronometroService.carregarCategorias();
       this.cronometroService.carregarMaterias();
       this.topicosService.carregarTopicos();
-      this.verificarRetornoSessao(); // Verificar se existe sessão pausada automaticamente
+      this.verificarRetornoSessao(); 
     } catch (error) {
       this.handleError('carregar dados iniciais', error);
     }

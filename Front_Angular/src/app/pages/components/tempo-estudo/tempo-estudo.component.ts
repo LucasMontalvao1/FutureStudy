@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { SessoesEstudoService } from '../../../services/sessoes-estudo.service'; // Ajuste o caminho
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { SessoesEstudoService } from '../../../services/sessoes-estudo.service';
 import { SessaoDashboardStatsDto } from '../../../models/sessao-estudo.models';
 
 @Component({
@@ -13,10 +13,26 @@ import { SessaoDashboardStatsDto } from '../../../models/sessao-estudo.models';
 export class TempoEstudoComponent implements OnInit {
   tempoTotal: string = '...';
   periodo: string = 'Esta semana';
+  isBrowser: boolean;
 
-  constructor(private dashboardService: SessoesEstudoService) {}
+  constructor(
+    private dashboardService: SessoesEstudoService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      setTimeout(() => {
+        this.carregarDados();
+      }, 100);
+    } else {
+      this.tempoTotal = '--';
+    }
+  }
+  
+  carregarDados(): void {
     this.dashboardService.getDashboard('semana', new Date()).subscribe({
       next: (res) => {
         if (res && res.tempoTotalEstudado != null) {
@@ -32,7 +48,6 @@ export class TempoEstudoComponent implements OnInit {
       }
     });
   }
-  
 
   formatarTempo(timeSpan: string): string {
     // Ex: "02:30:00" => 2h 30min

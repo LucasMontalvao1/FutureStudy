@@ -73,31 +73,46 @@ export class SessoesEstudoService {
   }
 
   // Obter estatísticas do dashboard
-  getDashboard(periodo: string = 'semana', data?: Date): Observable<any> {
-    let params = new HttpParams().set('periodo', periodo);
-  
-    // Adiciona o parâmetro 'data' no formato MM/dd/yyyy
-    if (data) {
-      const dia = String(data.getDate()).padStart(2, '0');
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const ano = data.getFullYear();
-      const dataFormatada = `${mes}/${dia}/${ano}`;
-      params = params.set('data', dataFormatada);
-    }
-  
-    return this.http.get<any>(`${this.apiUrl}/dashboard`, {
-      headers: this.getHeaders(),
-      params
-    }).pipe(
-      tap(response => {
-        console.log('Dashboard recebido:', response);
-      }),
-      catchError(error => {
-        console.error('Erro ao obter dashboard:', error);
-        return of(null);
-      })
-    );
+getDashboard(periodo: string = 'semana', data?: Date): Observable<any> {
+  // Verificar se estamos no navegador antes de prosseguir
+  if (!this.isBrowser) {
+    return of(null);
   }
+  
+  let params = new HttpParams().set('periodo', periodo);
+
+  // Adiciona o parâmetro 'data' no formato MM/dd/yyyy
+  if (data) {
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    const dataFormatada = `${mes}/${dia}/${ano}`;
+    params = params.set('data', dataFormatada);
+  }
+
+  const token = this.authService.getToken();
+  console.log('Token existe?', !!token);
+  console.log(token);
+  
+  // Só prosseguir com a requisição se tiver token
+  if (!token) {
+    console.log('Token não encontrado, não fazendo requisição');
+    return of(null);
+  }
+  
+  return this.http.get<any>(`${this.apiUrl}/dashboard`, {
+    headers: this.getHeaders(),
+    params
+  }).pipe(
+    tap(response => {
+      console.log('Dashboard recebido:', response);
+    }),
+    catchError(error => {
+      console.error('Erro ao obter dashboard:', error);
+      return of(null);
+    })
+  );
+}
 
   // Iniciar uma nova sessão de estudo
   iniciarSessao(sessao: any): Observable<any> {

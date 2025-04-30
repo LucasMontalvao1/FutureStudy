@@ -4,6 +4,7 @@ import { CronometroComponent } from './pages/components/cronometro/cronometro.co
 import { CalendarioComponent } from './pages/components/calendario/calendario.component';
 import { CategoriaComponent } from './pages/cadastros/categoria/categoria.component';
 import { MateriaComponent } from './pages/cadastros/materia/materia.component';
+import { TopicoComponent } from './pages/cadastros/topico/topico.component';
 
 export const routes: Routes = [
   { 
@@ -15,5 +16,6 @@ export const routes: Routes = [
   { path: 'calendario', component: CalendarioComponent },
   { path: 'categoria', component: CategoriaComponent },
   { path: 'materia', component: MateriaComponent },
+  { path: 'topico', component: TopicoComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];
