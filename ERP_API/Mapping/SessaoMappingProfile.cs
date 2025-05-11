@@ -2,6 +2,7 @@
 using ERP_API.Models.DTOs;
 using ERP_API.Models.Entities;
 using ERP_API.Models.Enums;
+using ERP_API.Repositorys.Interfaces;
 
 namespace ERP_API.Mapping
 {
@@ -10,7 +11,6 @@ namespace ERP_API.Mapping
         public SessaoMappingProfile()
         {
             CreateMap<SessaoEstudo, SessaoEstudoResponseDto>();
-
             CreateMap<SessaoEstudoRequestDto, SessaoEstudo>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
@@ -37,6 +37,13 @@ namespace ERP_API.Mapping
                 .ForMember(dest => dest.Inicio, opt => opt.Ignore())
                 .ForMember(dest => dest.Fim, opt => opt.Ignore())
                 .ForMember(dest => dest.CriadoEm, opt => opt.Ignore());
+
+            // Adicionar mapeamento para DashboardStats -> SessaoDashboardStatsDto
+            CreateMap<DashboardStats, SessaoDashboardStatsDto>()
+                // As propriedades calculadas (MediaHorasDiarias e PercentualDiasEstudados)
+                // serão calculadas automaticamente a partir das propriedades do DTO
+                .ForMember(dest => dest.MediaHorasDiarias, opt => opt.Ignore())
+                .ForMember(dest => dest.PercentualDiasEstudados, opt => opt.Ignore());
         }
     }
 }

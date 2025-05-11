@@ -74,7 +74,7 @@ namespace ERP_API.Repositories.Interfaces
         /// <param name="metaId">ID da meta</param>
         /// <param name="quantidadeAtual">Nova quantidade atual</param>
         /// <returns>True se a atualização for bem-sucedida, False caso contrário</returns>
-        Task<bool> UpdateProgressoAsync(int metaId, int quantidadeAtual);
+        Task<bool> UpdateProgressoAsync(int metaId, decimal quantidadeAtual);
 
         /// <summary>
         /// Obtém metas ativas (não concluídas e dentro do prazo)

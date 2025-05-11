@@ -1,1 +1,1 @@
-﻿DELETE FROM metas WHERE id = @id
+﻿DELETE FROM metas WHERE id = @id;

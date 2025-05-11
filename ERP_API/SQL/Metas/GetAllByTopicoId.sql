@@ -1,6 +1,7 @@
-﻿SELECT id, usuario_id, materia_id, topico_id, titulo, descricao, tipo, 
+﻿SELECT id, usuario_id, materia_id, categoria_id, topico_id, titulo, descricao, tipo_meta, 
        quantidade_total, quantidade_atual, unidade, frequencia, dias_semana,
-       data_inicio, data_fim, concluida, criado_em, atualizado_em
+       data_inicio, data_fim, concluida, notificar_quando_concluir,
+       notificar_porcentagem, ultima_verificacao, ativa, criado_em, atualizado_em
 FROM metas
 WHERE topico_id = @topicoId AND usuario_id = @usuarioId
-ORDER BY data_inicio DESC
+ORDER BY data_inicio DESC;

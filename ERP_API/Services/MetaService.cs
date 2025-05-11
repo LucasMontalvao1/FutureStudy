@@ -181,7 +181,7 @@ namespace ERP_API.Services
             return _mapper.Map<MetaResponseDto>(meta);
         }
 
-        public async Task<MetaResponseDto?> UpdateProgressoAsync(int id, int quantidade, int usuarioId)
+        public async Task<MetaResponseDto?> UpdateProgressoAsync(int id, decimal quantidade, int usuarioId)
         {
             var meta = await _metaRepository.GetByIdAsync(id);
             if (meta == null || meta.UsuarioId != usuarioId)
@@ -189,10 +189,10 @@ namespace ERP_API.Services
                 return null;
             }
 
-            int novaQuantidade = meta.QuantidadeAtual + quantidade;
+            decimal novaQuantidade = meta.QuantidadeAtual + quantidade;
             if (novaQuantidade < 0)
             {
-                novaQuantidade = 0; 
+                novaQuantidade = 0;
             }
 
             var success = await _metaRepository.UpdateProgressoAsync(id, novaQuantidade);
@@ -303,30 +303,37 @@ namespace ERP_API.Services
 
         private void ValidateTipoMeta(MetaRequestDto dto)
         {
-            switch (dto.Tipo)
+            switch (dto.TipoMeta)
             {
-                case TipoMeta.Tempo:
+                case TipoMeta.TempoTotal:
                     if (dto.Unidade != UnidadeMeta.Minutos && dto.Unidade != UnidadeMeta.Horas)
                     {
-                        throw new InvalidOperationException("Para metas de tempo, a unidade deve ser 'minutos' ou 'horas'");
+                        throw new InvalidOperationException("Para metas de tempo total, a unidade deve ser 'minutos' ou 'horas'");
                     }
                     break;
 
-                case TipoMeta.QtdSessoes:
+                case TipoMeta.SessoesConcluidas:
                     if (dto.Unidade != UnidadeMeta.Sessoes)
                     {
-                        throw new InvalidOperationException("Para metas de quantidade de sessões, a unidade deve ser 'sessoes'");
+                        throw new InvalidOperationException("Para metas de sessões concluídas, a unidade deve ser 'sessoes'");
                     }
                     break;
 
-                case TipoMeta.Topicos:
+                case TipoMeta.TopicosEstudados:
                     if (dto.Unidade != UnidadeMeta.Topicos)
                     {
-                        throw new InvalidOperationException("Para metas de tópicos, a unidade deve ser 'topicos'");
+                        throw new InvalidOperationException("Para metas de tópicos estudados, a unidade deve ser 'topicos'");
                     }
                     if (!dto.MateriaId.HasValue)
                     {
                         throw new InvalidOperationException("Para metas de tópicos, a matéria é obrigatória");
+                    }
+                    break;
+
+                case TipoMeta.CategoriasCompletas:
+                    if (dto.Unidade != UnidadeMeta.Categorias)
+                    {
+                        throw new InvalidOperationException("Para metas de categorias completas, a unidade deve ser 'categorias'");
                     }
                     break;
             }

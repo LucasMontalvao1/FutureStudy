@@ -9,21 +9,19 @@ namespace ERP_API.Mapping
     {
         public MetaMappingProfile()
         {
-            // Mapeamento de Meta para MetaResponseDto
             CreateMap<Meta, MetaResponseDto>()
                 .ForMember(dest => dest.PercentualConcluido, opt => opt.MapFrom(src =>
-                    src.QuantidadeTotal > 0 ? (decimal)src.QuantidadeAtual / src.QuantidadeTotal * 100 : 0));
+                    src.QuantidadeTotal > 0 ? (src.QuantidadeAtual / src.QuantidadeTotal * 100) : 0));
 
-            // Mapeamento de MetaRequestDto para Meta
             CreateMap<MetaRequestDto, Meta>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
-                .ForMember(dest => dest.QuantidadeAtual, opt => opt.Ignore())
-                .ForMember(dest => dest.Concluida, opt => opt.Ignore())
+                .ForMember(dest => dest.QuantidadeAtual, opt => opt.MapFrom(src => 0))
+                .ForMember(dest => dest.Concluida, opt => opt.MapFrom(src => false))
+                .ForMember(dest => dest.UltimaVerificacao, opt => opt.Ignore())
                 .ForMember(dest => dest.CriadoEm, opt => opt.Ignore())
                 .ForMember(dest => dest.AtualizadoEm, opt => opt.Ignore());
 
-            // Mapeamento de MetaUpdateRequestDto para Meta
             CreateMap<MetaUpdateRequestDto, Meta>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())

@@ -251,6 +251,7 @@ namespace ERP_API.Repositorys
                 };
 
                 await _databaseService.ExecuteNonQueryAsync(pausaQuery, pausaParameters);
+                await AtualizarTempoEstudadoAsync(id);
 
                 string query = await _sqlLoader.LoadSqlAsync("SessoesEstudo/FinalizarSessao.sql");
                 var parameters = new MySqlParameter[]
@@ -260,7 +261,7 @@ namespace ERP_API.Repositorys
                     new MySqlParameter("@status", ConvertStatusToDbValue(StatusSessao.Concluida))
                 };
 
-                var affectedRows = await _databaseService.ExecuteNonQueryAsync(query, parameters);
+                var affectedRows = await _databaseService.ExecuteNonQueryAsync(query, parameters);             
 
                 if (affectedRows > 0)
                 {
@@ -401,6 +402,23 @@ namespace ERP_API.Repositorys
                 _logger.LogError(ex, "Erro ao calcular tempo estudado da sessão {SessaoId}", sessaoId);
                 throw;
             }
+        }
+
+        public async Task AtualizarTempoEstudadoAsync(int sessaoId)
+        {
+            int tempoEstudado = await CalcularTempoEstudadoAsync(sessaoId);
+
+            string updateSql = @"UPDATE sessoes_estudo
+                         SET tempo_estudado_segundos = @tempoEstudado
+                         WHERE id = @sessaoId";
+
+            var parameters = new MySqlParameter[]
+            {
+                new MySqlParameter("@tempoEstudado", tempoEstudado),
+                new MySqlParameter("@sessaoId", sessaoId)
+            };
+
+            await _databaseService.ExecuteNonQueryAsync(updateSql, parameters);
         }
 
         private SessaoEstudo MapRowToSessao(DataRow row)

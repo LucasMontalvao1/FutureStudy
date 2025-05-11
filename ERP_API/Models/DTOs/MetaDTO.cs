@@ -1,7 +1,5 @@
-﻿using System;
+﻿using ERP_API.Models.Enums;
 using System.ComponentModel.DataAnnotations;
-using ERP_API.Models;
-using ERP_API.Models.Enums;
 
 namespace ERP_API.Models.DTOs
 {
@@ -12,29 +10,30 @@ namespace ERP_API.Models.DTOs
         public string Titulo { get; set; } = string.Empty;
 
         public string? Descricao { get; set; }
-
         public int? MateriaId { get; set; }
-
+        public int? CategoriaId { get; set; }
         public int? TopicoId { get; set; }
 
         [Required(ErrorMessage = "O tipo da meta é obrigatório")]
-        public TipoMeta Tipo { get; set; }
+        public TipoMeta TipoMeta { get; set; }
 
         [Required(ErrorMessage = "A quantidade total é obrigatória")]
-        [Range(1, int.MaxValue, ErrorMessage = "A quantidade total deve ser maior que zero")]
-        public int QuantidadeTotal { get; set; }
+        [Range(0.01, double.MaxValue, ErrorMessage = "A quantidade total deve ser maior que zero")]
+        public decimal QuantidadeTotal { get; set; }
 
         [Required(ErrorMessage = "A unidade da meta é obrigatória")]
         public UnidadeMeta Unidade { get; set; }
 
         public FrequenciaMeta? Frequencia { get; set; }
-
-        public string? DiasSemana { get; set; }
+        public string? DiasSemana { get; set; } // Ex: "seg,ter,qua"
 
         [Required(ErrorMessage = "A data de início é obrigatória")]
         public DateTime DataInicio { get; set; }
 
         public DateTime? DataFim { get; set; }
+        public bool NotificarQuandoConcluir { get; set; } = true;
+        public int NotificarPorcentagem { get; set; } = 100;
+        public bool Ativa { get; set; } = true;
     }
 
     public class MetaUpdateRequestDto
@@ -43,29 +42,24 @@ namespace ERP_API.Models.DTOs
         public string? Titulo { get; set; }
 
         public string? Descricao { get; set; }
-
         public int? MateriaId { get; set; }
-
+        public int? CategoriaId { get; set; }
         public int? TopicoId { get; set; }
+        public TipoMeta? TipoMeta { get; set; }
 
-        public TipoMeta? Tipo { get; set; }
+        [Range(0.01, double.MaxValue, ErrorMessage = "A quantidade total deve ser maior que zero")]
+        public decimal? QuantidadeTotal { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "A quantidade total deve ser maior que zero")]
-        public int? QuantidadeTotal { get; set; }
-
-        public int? QuantidadeAtual { get; set; }
-
+        public decimal? QuantidadeAtual { get; set; }
         public UnidadeMeta? Unidade { get; set; }
-
         public FrequenciaMeta? Frequencia { get; set; }
-
         public string? DiasSemana { get; set; }
-
         public DateTime? DataInicio { get; set; }
-
         public DateTime? DataFim { get; set; }
-
         public bool? Concluida { get; set; }
+        public bool? NotificarQuandoConcluir { get; set; }
+        public int? NotificarPorcentagem { get; set; }
+        public bool? Ativa { get; set; }
     }
 
     public class MetaResponseDto
@@ -74,29 +68,27 @@ namespace ERP_API.Models.DTOs
         public int UsuarioId { get; set; }
         public int? MateriaId { get; set; }
         public string? MateriaNome { get; set; }
+        public int? CategoriaId { get; set; }
+        public string? CategoriaNome { get; set; }
         public int? TopicoId { get; set; }
         public string? TopicoNome { get; set; }
         public string Titulo { get; set; } = string.Empty;
         public string? Descricao { get; set; }
-        public TipoMeta Tipo { get; set; }
-        public int QuantidadeTotal { get; set; }
-        public int QuantidadeAtual { get; set; }
+        public TipoMeta TipoMeta { get; set; }
+        public decimal QuantidadeTotal { get; set; }
+        public decimal QuantidadeAtual { get; set; }
         public UnidadeMeta Unidade { get; set; }
         public FrequenciaMeta? Frequencia { get; set; }
         public string? DiasSemana { get; set; }
         public DateTime DataInicio { get; set; }
         public DateTime? DataFim { get; set; }
         public bool Concluida { get; set; }
+        public bool NotificarQuandoConcluir { get; set; }
+        public int NotificarPorcentagem { get; set; }
+        public DateTime? UltimaVerificacao { get; set; }
+        public bool Ativa { get; set; }
         public DateTime CriadoEm { get; set; }
         public DateTime AtualizadoEm { get; set; }
         public decimal PercentualConcluido { get; set; }
-    }
-
-    public class MetaProgresso
-    {
-        public int UsuarioId { get; set; }
-        public int MetaId { get; set; }
-        public int QuantidadeRegistrada { get; set; }
-        public DateTime DataRegistro { get; set; }
     }
 }

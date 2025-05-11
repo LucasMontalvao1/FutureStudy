@@ -41,6 +41,7 @@
 	  <None Remove="SQL\SessoesEstudo\UpdateStatus.sql" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="Infra\Config\" />
 	  <Folder Include="Logs\" />
 	</ItemGroup>
 </Project>

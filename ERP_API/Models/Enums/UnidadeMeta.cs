@@ -16,6 +16,9 @@ namespace ERP_API.Models.Enums
         Topicos = 2,
 
         [Description("Sessões")]
-        Sessoes = 3
+        Sessoes = 3,
+
+        [Description("Categorias")]
+        Categorias = 4
     }
 }

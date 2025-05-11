@@ -1,12 +1,12 @@
-﻿using ERP_API.Models.DTOs;
+﻿using ERP_API.Models;
 using ERP_API.Models.Enums;
 using FluentValidation;
 
 namespace ERP_API.Validators
 {
-    public class MetaRequestValidator : AbstractValidator<MetaRequestDto>
+    public class MetaValidator : AbstractValidator<Meta>
     {
-        public MetaRequestValidator()
+        public MetaValidator()
         {
             RuleFor(x => x.Titulo)
                 .NotEmpty().WithMessage("O título da meta é obrigatório")
@@ -68,6 +68,7 @@ namespace ERP_API.Validators
 
             RuleFor(x => x.NotificarPorcentagem)
                 .InclusiveBetween(1, 100)
+                .When(x => x.NotificarQuandoConcluir)
                 .WithMessage("A porcentagem de notificação deve estar entre 1 e 100");
         }
 

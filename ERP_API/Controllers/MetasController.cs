@@ -225,7 +225,7 @@ namespace ERP_API.Controllers
         }
 
         [HttpPatch("{id}/progresso")]
-        public async Task<IActionResult> UpdateProgresso(int id, [FromBody] int quantidade)
+        public async Task<IActionResult> UpdateProgresso(int id, [FromBody] decimal quantidade)
         {
             try
             {

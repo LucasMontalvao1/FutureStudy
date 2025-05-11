@@ -64,7 +64,7 @@ namespace ERP_API.Services.Interfaces
         /// <param name="quantidade">Quantidade a ser adicionada ao progresso atual</param>
         /// <param name="usuarioId">ID do usuário</param>
         /// <returns>DTO da meta atualizada ou null se não encontrada</returns>
-        Task<MetaResponseDto?> UpdateProgressoAsync(int id, int quantidade, int usuarioId);
+        Task<MetaResponseDto?> UpdateProgressoAsync(int id, decimal quantidade, int usuarioId);
 
         /// <summary>
         /// Marca uma meta como concluída

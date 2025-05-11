@@ -6,13 +6,16 @@ namespace ERP_API.Models.Enums
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TipoMeta
     {
-        [Description("Tempo de estudo")]
-        Tempo = 0,
+        [Description("Tempo Total")]
+        TempoTotal = 0,
 
-        [Description("Quantidade de sessões")]
-        QtdSessoes = 1,
+        [Description("Sessões Concluídas")]
+        SessoesConcluidas = 1,
 
-        [Description("Tópicos concluídos")]
-        Topicos = 2
+        [Description("Tópicos Estudados")]
+        TopicosEstudados = 2,
+
+        [Description("Categorias Completas")]
+        CategoriasCompletas = 3
     }
 }

@@ -1,11 +1,41 @@
-﻿INSERT INTO metas (
-    usuario_id, materia_id, topico_id, titulo, descricao, tipo, 
-    quantidade_total, quantidade_atual, unidade, frequencia, dias_semana,
-    data_inicio, data_fim, concluida
-)
-VALUES (
-    @usuarioId, @materiaId, @topicoId, @titulo, @descricao, @tipo, 
-    @quantidadeTotal, @quantidadeAtual, @unidade, @frequencia, @diasSemana,
-    @dataInicio, @dataFim, @concluida
+﻿-- Create.sql
+INSERT INTO metas (
+    usuario_id,
+    materia_id,
+    categoria_id,
+    topico_id,
+    titulo,
+    descricao,
+    tipo_meta,
+    quantidade_total,
+    quantidade_atual,
+    unidade,
+    frequencia,
+    dias_semana,
+    data_inicio,
+    data_fim,
+    concluida,
+    notificar_quando_concluir,
+    notificar_porcentagem,
+    ativa
+) VALUES (
+    @usuarioId,
+    @materiaId,
+    @categoriaId,
+    @topicoId,
+    @titulo,
+    @descricao,
+    @tipoMeta,
+    @quantidadeTotal,
+    @quantidadeAtual,
+    @unidade,
+    @frequencia,
+    @diasSemana,
+    @dataInicio,
+    @dataFim,
+    @concluida,
+    @notificarQuandoConcluir,
+    @notificarPorcentagem,
+    @ativa
 );
 SELECT LAST_INSERT_ID();
